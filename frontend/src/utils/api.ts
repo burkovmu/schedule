@@ -4,17 +4,25 @@ import { ScheduleData, Lesson, Group, TimeSlot, Teacher, Subject, Room, Assistan
 const getApiBaseUrl = () => {
   // Если задана переменная окружения, используем её
   if (process.env.REACT_APP_API_URL) {
+    console.log('🔧 Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
   
   // Проверяем, находимся ли мы в локальной разработке
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                     window.location.hostname === '127.0.0.1' ||
-                     window.location.hostname.includes('192.168.') ||
-                     window.location.hostname.includes('10.0.');
+  const hostname = window.location.hostname;
+  const isLocalhost = hostname === 'localhost' || 
+                     hostname === '127.0.0.1' ||
+                     hostname.includes('192.168.') ||
+                     hostname.includes('10.0.');
+  
+  console.log('🌐 Hostname:', hostname);
+  console.log('🔧 Is localhost:', isLocalhost);
   
   // Если локально - используем localhost:5000, иначе относительный путь
-  return isLocalhost ? 'http://localhost:5000/api' : '/api';
+  const apiUrl = isLocalhost ? 'http://localhost:5000/api' : '/api';
+  console.log('🔧 API URL:', apiUrl);
+  
+  return apiUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -26,11 +34,22 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
     console.log('🌐 Hostname:', window.location.hostname);
     console.log('🔧 Environment:', process.env.NODE_ENV);
     
-    const [groups, lessons, subjects, teachers, assistants, rooms, timeSlots] = await Promise.all([
-      fetch(`${API_BASE_URL}/groups`).then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        return res.json();
-      }),
+    // Тестируем первый запрос отдельно
+    console.log('🧪 Тестируем запрос к группам...');
+    const groupsResponse = await fetch(`${API_BASE_URL}/groups`);
+    console.log('📡 Groups response status:', groupsResponse.status);
+    console.log('📡 Groups response ok:', groupsResponse.ok);
+    
+    if (!groupsResponse.ok) {
+      const errorText = await groupsResponse.text();
+      console.error('❌ Groups response error:', errorText);
+      throw new Error(`HTTP ${groupsResponse.status}: ${groupsResponse.statusText}`);
+    }
+    
+    const groups = await groupsResponse.json();
+    console.log('✅ Groups loaded:', groups.length, 'items');
+    
+    const [lessons, subjects, teachers, assistants, rooms, timeSlots] = await Promise.all([
       fetch(`${API_BASE_URL}/lessons`).then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         return res.json();
@@ -57,7 +76,16 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
       })
     ]);
 
-    console.log('✅ Данные успешно загружены:', { groups: groups.length, lessons: lessons.length });
+    console.log('✅ Все данные успешно загружены');
+    console.log('📊 Статистика:', {
+      groups: groups.length,
+      lessons: lessons.length,
+      subjects: subjects.length,
+      teachers: teachers.length,
+      assistants: assistants.length,
+      rooms: rooms.length,
+      timeSlots: timeSlots.length
+    });
     
     return {
       groups,
@@ -72,6 +100,7 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
     console.error('❌ Ошибка загрузки данных:', error);
     console.error('🔗 API URL:', API_BASE_URL);
     console.error('🌐 Hostname:', window.location.hostname);
+    console.error('🔧 Environment:', process.env.NODE_ENV);
     throw new Error('Не удалось загрузить данные расписания');
   }
 };
