@@ -90,23 +90,35 @@ let dataStore = {
   lessons: []
 };
 
-// Генерация временных слотов (каждый час)
+// Генерация временных слотов
 const generateTimeSlots = () => {
   const timeSlots = [];
   let slotId = 1;
 
   for (let hour = 9; hour < 18; hour++) {
-    const startTime = `${hour.toString().padStart(2, '0')}:00`;
-    const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;
-    
-    timeSlots.push({
-      id: slotId.toString(),
-      startTime: startTime,
-      endTime: endTime,
-      displayTime: startTime
-    });
-    
-    slotId++;
+    for (let minute = 0; minute < 60; minute += 5) {
+      const startHour = hour;
+      const startMinute = minute;
+      const endMinute = minute + 5;
+      const endHour = endMinute >= 60 ? hour + 1 : hour;
+      const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
+      
+      if (endHour > 18 || (endHour === 18 && finalEndMinute > 0)) {
+        break;
+      }
+      
+      const startTime = `${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+      const endTime = `${endHour.toString().padStart(2, '0')}:${finalEndMinute.toString().padStart(2, '0')}`;
+      
+      timeSlots.push({
+        id: slotId.toString(),
+        startTime: startTime,
+        endTime: endTime,
+        displayTime: startTime
+      });
+      
+      slotId++;
+    }
   }
   
   return timeSlots;
