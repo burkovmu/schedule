@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/core';
 import { ScheduleData, Lesson, Notification } from '../types';
 import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
-import { fetchScheduleData, updateLesson, deleteLesson } from '../utils/api';
+import { updateLesson, deleteLesson } from '../utils/api';
 import DraggableLesson from './DraggableLesson';
 import DroppableCell from './DroppableCell';
 import LessonForm from './LessonForm';

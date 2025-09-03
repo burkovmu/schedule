@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Teacher, Subject, Room, Group, Assistant } from '../types';
 import { createTeacher, deleteTeacher } from '../utils/api';
 import { createSubject, deleteSubject } from '../utils/api';

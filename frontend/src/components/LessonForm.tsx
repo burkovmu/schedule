@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Lesson, Group, Subject, Teacher, Assistant, Room, TimeSlot } from '../types';
 import { createLesson } from '../utils/api';
-import { validateLesson, ConflictInfo, generateTimeSlots, getLessonSpan } from '../utils/scheduleUtils';
+import { validateLesson, ConflictInfo, getLessonSpan } from '../utils/scheduleUtils';
 
 interface LessonFormProps {
   groups: Group[];

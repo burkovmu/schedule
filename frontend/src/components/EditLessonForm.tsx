@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lesson, Group, Subject, Teacher, Assistant, Room, TimeSlot } from '../types';
 import { updateLesson, deleteLesson } from '../utils/api';
-import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
+// import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
 
 interface EditLessonFormProps {
   lesson: Lesson;

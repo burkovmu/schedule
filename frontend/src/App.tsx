@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Schedule from './components/Schedule';
 import ReferenceManager from './components/ReferenceManager';
@@ -15,7 +15,11 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
 
-  const addNotification = (notification: Omit<Notification, 'id'>) => {
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
+  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const id = Date.now().toString();
     const newNotification = { ...notification, id };
     setNotifications(prev => [...prev, newNotification]);
@@ -24,14 +28,12 @@ function App() {
     setTimeout(() => {
       removeNotification(id);
     }, 5000);
-  };
+  }, [removeNotification]);
 
-  const removeNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+
 
   // Загрузка данных расписания
-  const loadScheduleData = async () => {
+  const loadScheduleData = useCallback(async () => {
     setLoading(true);
     try {
       const data = await fetchScheduleData();
@@ -44,12 +46,12 @@ function App() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [addNotification]);
 
   // Загрузка данных при монтировании компонента
   useEffect(() => {
     loadScheduleData();
-  }, []);
+  }, [loadScheduleData]);
 
   const tabs = [
     { id: 'schedule' as TabType, label: 'Расписание', icon: '' },
