@@ -37,9 +37,34 @@ try {
 // In-memory хранилище как fallback
 let dataStore = {
   groups: [
+    { id: 'c2035142-5d91-4e45-8587-2c4cc1f1fe37', name: 'Альфа 0', display_order: 1 },
     { id: 'group1', name: 'Группа А', display_order: 1 },
+    { id: '0b47b40f-ae9d-4994-8737-ac75ed69b523', name: 'Альфа 1', display_order: 2 },
     { id: 'group2', name: 'Группа Б', display_order: 2 },
-    { id: 'group3', name: 'Группа В', display_order: 3 }
+    { id: 'a66d4573-df8c-4eb3-9ca7-9933511da44a', name: 'Альфа 2', display_order: 3 },
+    { id: 'group3', name: 'Группа В', display_order: 3 },
+    { id: '978a32c5-16b8-4538-b7ae-2ddb3441c73b', name: 'Альфа 3', display_order: 4 },
+    { id: '5719a13d-7f4c-405d-a8e0-addabc996eb9', name: 'Бета 1', display_order: 5 },
+    { id: '6c301bfb-8280-47e9-9812-58e91dd6c920', name: 'Бета 2', display_order: 6 },
+    { id: '8826afe7-fe53-4e66-ac43-36526da93fb3', name: 'Бета 4', display_order: 7 },
+    { id: '3fc5ce07-0618-4204-a60f-a4d5ab99b95d', name: 'Гамма 1', display_order: 8 },
+    { id: '5a03814a-8226-4540-9369-ca3d7c5cd504', name: 'Гамма 2', display_order: 9 },
+    { id: '03589669-9ab2-4586-9e46-709699a82206', name: 'Гамма 4', display_order: 10 },
+    { id: 'df7c6e15-2ac9-4fe1-b311-e7f6ee941ec2', name: 'Дельта 1', display_order: 11 },
+    { id: '6f3a5606-8a71-4a6c-b165-a5f5713bdc30', name: 'Дельта 2', display_order: 12 },
+    { id: 'acb8f5cd-1fbf-45d4-8486-ef84c192522f', name: 'Дельта 4', display_order: 13 },
+    { id: '73c5c64a-4548-49a0-872e-ac1b40ce4c64', name: 'Эпсилон 1', display_order: 14 },
+    { id: '1007bdff-c93f-43e6-aa9b-b5a8ab78bc0b', name: 'Эпсилон 2', display_order: 15 },
+    { id: 'd2502300-6cc0-4363-9814-5461f1770f84', name: 'Эпсилон 3', display_order: 16 },
+    { id: 'eea5867b-4bd4-47c2-81c8-9a8c83a10152', name: 'Эпсилон 4', display_order: 17 },
+    { id: '4961fbdc-1288-474a-b774-10960aa7c6dd', name: 'Лямбда 1', display_order: 18 },
+    { id: 'd31416ee-1b20-45bc-a434-5fef6d05031f', name: 'Лямбда 2', display_order: 19 },
+    { id: '79e7e3d1-d845-4ed7-b3d6-5f1b8d0ce54b', name: 'Лямбда 4', display_order: 20 },
+    { id: '09fcfa99-6434-44fa-b78f-9b1a58e9edb46', name: 'Лямбда 5', display_order: 21 },
+    { id: 'f358e609-7302-435c-91e0-c82f9b2dfc71', name: 'Омикрон 1', display_order: 22 },
+    { id: 'b16ce33a-6ec9-42a6-85ee-410f724f99c4', name: 'Омикрон 2', display_order: 23 },
+    { id: '4737dba5-c0d7-4768-9907-d44a846c69c4', name: 'Омикрон 3', display_order: 24 },
+    { id: '958e922a-34fe-4485-86b9-349a78e640fc', name: 'Омега', display_order: 25 }
   ],
   subjects: [
     { id: 'subj1', name: 'Математика', color: '#667eea' },
