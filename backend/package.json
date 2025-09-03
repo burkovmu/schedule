@@ -4,9 +4,10 @@
   "description": "Backend для приложения расписания",
   "main": "server.js",
   "scripts": {
-    "start": "node server-supabase.js",
+    "start": "node server-vercel.js",
     "dev": "nodemon server-supabase.js",
-    "dev-sqlite": "nodemon server.js"
+    "dev-sqlite": "nodemon server.js",
+    "dev-vercel": "nodemon server-vercel.js"
   },
   "dependencies": {
     "express": "^4.18.2",
