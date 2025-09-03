@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import Schedule from './components/Schedule';
+import ReferenceManager from './components/ReferenceManager';
+import NotificationSystem from './components/NotificationSystem';
+import { Notification, ScheduleData } from './types';
+import { fetchScheduleData } from './utils/api';
+
+type TabType = 'schedule' | 'teachers' | 'subjects' | 'rooms' | 'groups' | 'assistants';
+
+function App() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const [scheduleData, setScheduleData] = useState<ScheduleData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('schedule');
+
+  const addNotification = (notification: Omit<Notification, 'id'>) => {
+    const id = Date.now().toString();
+    const newNotification = { ...notification, id };
+    setNotifications(prev => [...prev, newNotification]);
+    
+    // Автоматическое удаление через 5 секунд
+    setTimeout(() => {
+      removeNotification(id);
+    }, 5000);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // Загрузка данных расписания
+  const loadScheduleData = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchScheduleData();
+      setScheduleData(data);
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        message: 'Ошибка загрузки данных расписания'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Загрузка данных при монтировании компонента
+  useEffect(() => {
+    loadScheduleData();
+  }, []);
+
+  const tabs = [
+    { id: 'schedule' as TabType, label: 'Расписание', icon: '' },
+    { id: 'teachers' as TabType, label: 'Преподаватели', icon: '' },
+    { id: 'subjects' as TabType, label: 'Предметы', icon: '' },
+    { id: 'rooms' as TabType, label: 'Аудитории', icon: '' },
+    { id: 'groups' as TabType, label: 'Группы', icon: '' },
+    { id: 'assistants' as TabType, label: 'Ассистенты', icon: '' }
+  ];
+
+  const renderTabContent = () => {
+    if (!scheduleData) {
+      return (
+        <div className="loading">Загрузка данных...</div>
+      );
+    }
+
+    switch (activeTab) {
+      case 'schedule':
+        return (
+          <Schedule 
+            scheduleData={scheduleData}
+            onNotification={addNotification}
+            onRefresh={loadScheduleData}
+          />
+        );
+      
+      case 'teachers':
+        return (
+          <ReferenceManager
+            type="teachers"
+            title="Преподаватели"
+            items={scheduleData.teachers}
+            onRefresh={loadScheduleData}
+            onNotification={addNotification}
+          />
+        );
+      
+      case 'subjects':
+        return (
+          <ReferenceManager
+            type="subjects"
+            title="Предметы"
+            items={scheduleData.subjects}
+            onRefresh={loadScheduleData}
+            onNotification={addNotification}
+          />
+        );
+      
+      case 'rooms':
+        return (
+          <ReferenceManager
+            type="rooms"
+            title="Аудитории"
+            items={scheduleData.rooms}
+            onRefresh={loadScheduleData}
+            onNotification={addNotification}
+          />
+        );
+      
+      case 'groups':
+        return (
+          <ReferenceManager
+            type="groups"
+            title="Группы"
+            items={scheduleData.groups}
+            onRefresh={loadScheduleData}
+            onNotification={addNotification}
+          />
+        );
+      
+      case 'assistants':
+        return (
+          <ReferenceManager
+            type="assistants"
+            title="Ассистенты"
+            items={scheduleData.assistants}
+            onRefresh={loadScheduleData}
+            onNotification={addNotification}
+          />
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <div className="header-content">
+          <h1 className="app-title">Расписание</h1>
+          
+          <nav className="header-nav">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`nav-button ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                <span className="nav-icon">{tab.icon}</span>
+                <span className="nav-label">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+          
+
+        </div>
+      </header>
+      
+      <main className="app-main">
+        {loading ? (
+          <div className="loading">Загрузка приложения...</div>
+        ) : (
+          renderTabContent()
+        )}
+      </main>
+      
+      <NotificationSystem 
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+    </div>
+  );
+}
+
+export default App;
