@@ -1,15 +1,30 @@
 import { ScheduleData, Lesson, Group, TimeSlot, Teacher, Subject, Room, Assistant } from '../types';
 
 // Автоматическое определение API URL для локальной разработки и продакшена
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (window.location.hostname === 'localhost' 
-    ? 'http://localhost:5000/api' 
-    : '/api');
+const getApiBaseUrl = () => {
+  // Если задана переменная окружения, используем её
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // Проверяем, находимся ли мы в локальной разработке
+  const isLocalhost = window.location.hostname === 'localhost' || 
+                     window.location.hostname === '127.0.0.1' ||
+                     window.location.hostname.includes('192.168.') ||
+                     window.location.hostname.includes('10.0.');
+  
+  // Если локально - используем localhost:5000, иначе относительный путь
+  return isLocalhost ? 'http://localhost:5000/api' : '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Загрузка всех данных расписания
 export const fetchScheduleData = async (): Promise<ScheduleData> => {
   try {
     console.log('🔄 Загружаем данные с URL:', API_BASE_URL);
+    console.log('🌐 Hostname:', window.location.hostname);
+    console.log('🔧 Environment:', process.env.NODE_ENV);
     
     const [groups, lessons, subjects, teachers, assistants, rooms, timeSlots] = await Promise.all([
       fetch(`${API_BASE_URL}/groups`).then(res => {
@@ -56,6 +71,7 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
   } catch (error) {
     console.error('❌ Ошибка загрузки данных:', error);
     console.error('🔗 API URL:', API_BASE_URL);
+    console.error('🌐 Hostname:', window.location.hostname);
     throw new Error('Не удалось загрузить данные расписания');
   }
 };
