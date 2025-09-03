@@ -7,8 +7,13 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
+// Middleware - исправленный CORS для мобильных устройств
+app.use(cors({
+  origin: true, // Разрешить все домены
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 app.use(express.json());
 
 // Инициализация Supabase
@@ -146,6 +151,7 @@ app.get('/api/groups', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка получения групп:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -164,6 +170,7 @@ app.post('/api/groups', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания группы:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -180,6 +187,7 @@ app.delete('/api/groups/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Группа удалена' });
   } catch (error) {
+    console.error('Ошибка удаления группы:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -194,6 +202,7 @@ app.get('/api/subjects', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка получения предметов:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -212,6 +221,7 @@ app.post('/api/subjects', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания предмета:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -228,6 +238,7 @@ app.delete('/api/subjects/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Предмет удален' });
   } catch (error) {
+    console.error('Ошибка удаления предмета:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -242,6 +253,7 @@ app.get('/api/teachers', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка получения преподавателей:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -260,6 +272,7 @@ app.post('/api/teachers', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания преподавателя:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -276,6 +289,7 @@ app.delete('/api/teachers/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Преподаватель удален' });
   } catch (error) {
+    console.error('Ошибка удаления преподавателя:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -290,6 +304,7 @@ app.get('/api/assistants', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка получения ассистентов:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -308,6 +323,7 @@ app.post('/api/assistants', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания ассистента:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -324,6 +340,7 @@ app.delete('/api/assistants/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Ассистент удален' });
   } catch (error) {
+    console.error('Ошибка удаления ассистента:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -338,6 +355,7 @@ app.get('/api/rooms', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка получения аудиторий:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -356,6 +374,7 @@ app.post('/api/rooms', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания аудитории:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -372,6 +391,7 @@ app.delete('/api/rooms/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Кабинет удален' });
   } catch (error) {
+    console.error('Ошибка удаления аудитории:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -406,6 +426,7 @@ app.get('/api/lessons', async (req, res) => {
     
     res.json(formattedData);
   } catch (error) {
+    console.error('Ошибка получения уроков:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -435,6 +456,7 @@ app.post('/api/lessons', async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (error) {
+    console.error('Ошибка создания урока:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -454,6 +476,7 @@ app.put('/api/lessons/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Урок обновлен', data });
   } catch (error) {
+    console.error('Ошибка обновления урока:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -470,6 +493,7 @@ app.delete('/api/lessons/:id', async (req, res) => {
     if (error) throw error;
     res.json({ message: 'Урок удален' });
   } catch (error) {
+    console.error('Ошибка удаления урока:', error);
     res.status(500).json({ error: error.message });
   }
 });

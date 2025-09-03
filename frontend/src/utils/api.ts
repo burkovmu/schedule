@@ -1,20 +1,49 @@
 import { ScheduleData, Lesson, Group, TimeSlot, Teacher, Subject, Room, Assistant } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Автоматическое определение API URL для локальной разработки и продакшена
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (window.location.hostname === 'localhost' 
+    ? 'http://localhost:5000/api' 
+    : '/api');
 
 // Загрузка всех данных расписания
 export const fetchScheduleData = async (): Promise<ScheduleData> => {
   try {
+    console.log('🔄 Загружаем данные с URL:', API_BASE_URL);
+    
     const [groups, lessons, subjects, teachers, assistants, rooms, timeSlots] = await Promise.all([
-      fetch(`${API_BASE_URL}/groups`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/lessons`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/subjects`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/teachers`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/assistants`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/rooms`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/lessons/time-slots/all`).then(res => res.json())
+      fetch(`${API_BASE_URL}/groups`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/lessons`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/subjects`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/teachers`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/assistants`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/rooms`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      }),
+      fetch(`${API_BASE_URL}/lessons/time-slots/all`).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      })
     ]);
 
+    console.log('✅ Данные успешно загружены:', { groups: groups.length, lessons: lessons.length });
+    
     return {
       groups,
       lessons,
@@ -25,7 +54,8 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
       timeSlots
     };
   } catch (error) {
-    console.error('Ошибка загрузки данных:', error);
+    console.error('❌ Ошибка загрузки данных:', error);
+    console.error('🔗 API URL:', API_BASE_URL);
     throw new Error('Не удалось загрузить данные расписания');
   }
 };
