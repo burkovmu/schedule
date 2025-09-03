@@ -3,7 +3,6 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
@@ -242,13 +241,5 @@ app.delete('/api/lessons/:id', (req, res) => {
   res.json({ message: 'Урок удален' });
 });
 
-// Для Vercel - экспортируем app
+// Экспортируем для Vercel
 module.exports = app;
-
-// Для локальной разработки
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🚀 Сервер запущен на порту ${PORT}`);
-    console.log(`📊 База данных: In-Memory (Vercel)`);
-  });
-}
