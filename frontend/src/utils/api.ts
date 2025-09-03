@@ -1,6 +1,6 @@
 import { ScheduleData, Lesson, Group, TimeSlot, Teacher, Subject, Room, Assistant } from '../types';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Загрузка всех данных расписания
 export const fetchScheduleData = async (): Promise<ScheduleData> => {
