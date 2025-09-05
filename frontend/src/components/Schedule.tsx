@@ -34,6 +34,20 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  // Функции для управления масштабом
+  const handleZoomIn = useCallback(() => {
+    setZoomLevel(prev => Math.min(prev + 0.1, 2));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
+  }, []);
+
+  const handleZoomReset = useCallback(() => {
+    setZoomLevel(1);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -322,6 +336,34 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
             <span className="scroll-indicator">
               ← Прокрутите влево/вправо для просмотра всего расписания →
             </span>
+            <div className="zoom-controls">
+              <button 
+                className="zoom-btn"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= 0.5}
+                title="Уменьшить масштаб"
+              >
+                −
+              </button>
+              <span className="zoom-level">
+                {Math.round(zoomLevel * 100)}%
+              </span>
+              <button 
+                className="zoom-btn"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= 2}
+                title="Увеличить масштаб"
+              >
+                +
+              </button>
+              <button 
+                className="zoom-reset-btn"
+                onClick={handleZoomReset}
+                title="Сбросить масштаб"
+              >
+                ⌂
+              </button>
+            </div>
             <button 
               className="btn-primary"
               onClick={() => {
@@ -339,7 +381,14 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
 
       {/* Прокручиваемая таблица расписания */}
       <div className="schedule-wrapper">
-        <div className="schedule-container">
+        <div 
+          className="schedule-container"
+          style={{ 
+            transform: `scale(${zoomLevel})`,
+            transformOrigin: 'top left',
+            height: `${100 / zoomLevel}%`
+          }}
+        >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
