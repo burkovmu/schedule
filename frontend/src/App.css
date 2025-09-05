@@ -261,8 +261,19 @@ body {
   }
   
   .schedule-actions .login-btn {
-    order: 3;
+    order: 2;
     flex-shrink: 0;
+  }
+  
+  /* Группируем масштаб и кнопку входа в одну строку */
+  .schedule-actions .zoom-controls,
+  .schedule-actions .login-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .schedule-actions .zoom-controls {
+    margin-right: 16px;
   }
 }
 
