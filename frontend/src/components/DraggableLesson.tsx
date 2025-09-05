@@ -9,6 +9,7 @@ interface DraggableLessonProps {
   groupIndex: number;
   onEdit?: (lesson: Lesson) => void;
   onDelete?: (lessonId: string) => void;
+  onResize?: (lessonId: string, newDuration: number) => void;
 }
 
 // Функция для вычисления времени урока
@@ -34,8 +35,10 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
   span, 
   groupIndex,
   onEdit,
-  onDelete
+  onDelete,
+  onResize
 }) => {
+  console.log('DraggableLesson rendered with onResize:', !!onResize);
   const {
     attributes,
     listeners,
@@ -45,6 +48,7 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
   } = useDraggable({
     id: lesson.id,
   });
+
 
   const style: React.CSSProperties = {
     gridColumn: `${startSlotIndex + 2} / span ${span}`,
@@ -79,43 +83,96 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
     }
   };
 
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={`lesson ${isDragging ? 'dragging' : ''}`}
-      {...listeners}
       {...attributes}
     >
-      <div className="lesson-aligned">
-        <div className="lesson-time">{lessonTime}</div>
-        <div className="lesson-data-row">{lesson.subject_name}</div>
-        <div className="lesson-data-row">{lesson.teacher_name}</div>
-        <div className="lesson-data-row">{lesson.assistant_name || '—'}</div>
-        <div className="lesson-data-row">{lesson.room_name}</div>
-      </div>
-      
-      {/* Кнопки действий */}
-      <div className="lesson-actions">
-        {onEdit && (
-          <button 
-            className="lesson-action-btn edit-btn"
-            onClick={handleEdit}
-            title="Редактировать урок"
-          >
-            ✏️
-          </button>
+      {/* Центральная область для drag-and-drop */}
+      <div 
+        className="lesson-drag-area"
+        {...listeners}
+        style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0,
+          zIndex: 5
+        }}
+      >
+        <div className="lesson-aligned">
+          <div className="lesson-time">{lessonTime}</div>
+          <div className="lesson-data-row">{lesson.subject_name}</div>
+          <div className="lesson-data-row">{lesson.teacher_name}</div>
+          <div className="lesson-data-row">{lesson.assistant_name || '—'}</div>
+          <div className="lesson-data-row">{lesson.room_name}</div>
+        </div>
+        
+        {/* Кнопки действий */}
+        <div className="lesson-actions">
+          {onEdit && (
+            <button 
+              className="lesson-action-btn edit-btn"
+              onClick={handleEdit}
+              title="Редактировать урок"
+            >
+              ✏️
+            </button>
+          )}
+          {onDelete && (
+            <button 
+              className="lesson-action-btn delete-btn"
+              onClick={handleDelete}
+              title="Удалить урок"
+            >
+              🗑️
+            </button>
+          )}
+        </div>
+
+        {/* Кнопки изменения размера - слева и справа */}
+        {onResize && (
+          <>
+            {/* Кнопка уменьшения - слева */}
+            <button 
+              className="lesson-resize-btn resize-left"
+              onClick={() => {
+                console.log('Resize -5 clicked');
+                const validDurations = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+                const currentIndex = validDurations.indexOf(lesson.duration);
+                if (currentIndex > 0) {
+                  onResize(lesson.id, validDurations[currentIndex - 1]);
+                }
+              }}
+              title="Уменьшить длительность"
+              disabled={lesson.duration <= 10}
+            >
+              -
+            </button>
+            {/* Кнопка увеличения - справа */}
+            <button 
+              className="lesson-resize-btn resize-right"
+              onClick={() => {
+                console.log('Resize +5 clicked');
+                const validDurations = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+                const currentIndex = validDurations.indexOf(lesson.duration);
+                if (currentIndex < validDurations.length - 1) {
+                  onResize(lesson.id, validDurations[currentIndex + 1]);
+                }
+              }}
+              title="Увеличить длительность"
+              disabled={lesson.duration >= 60}
+            >
+              +
+            </button>
+          </>
         )}
-        {onDelete && (
-          <button 
-            className="lesson-action-btn delete-btn"
-            onClick={handleDelete}
-            title="Удалить урок"
-          >
-            🗑️
-          </button>
-        )}
       </div>
+
     </div>
   );
 };

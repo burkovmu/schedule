@@ -227,6 +227,51 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     }
   };
 
+  // Обработка изменения размера урока
+  const handleResizeLesson = async (lessonId: string, newDuration: number) => {
+    console.log('handleResizeLesson called:', lessonId, newDuration);
+    try {
+      const lesson = lessonsWithPositions.find(l => l.id === lessonId);
+      if (!lesson) {
+        console.log('Lesson not found:', lessonId);
+        return;
+      }
+
+      console.log('Found lesson:', lesson);
+
+      // Проверяем конфликты с новой длительностью
+      const updatedLesson = {
+        ...lesson,
+        duration: newDuration,
+        span: getLessonSpan(newDuration)
+      };
+
+      const conflicts = validateLesson(updatedLesson, lessonsWithPositions);
+      if (conflicts.length > 0) {
+        console.log('Conflicts found:', conflicts);
+        onNotification({
+          type: 'error',
+          message: 'Нельзя изменить размер урока: есть конфликты'
+        });
+        return;
+      }
+
+      console.log('Updating lesson duration to:', newDuration);
+      await updateLesson(lessonId, { duration: newDuration });
+      await onRefresh();
+      onNotification({
+        type: 'success',
+        message: `Длительность урока изменена на ${newDuration} минут`
+      });
+    } catch (error) {
+      console.error('Ошибка при изменении размера урока:', error);
+      onNotification({
+        type: 'error',
+        message: 'Ошибка при изменении размера урока'
+      });
+    }
+  };
+
   // Обработка успешного редактирования урока
   const handleEditSuccess = async (message: string) => {
     await onRefresh();
@@ -377,6 +422,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
                     groupIndex={groupIndex}
                     onEdit={handleEditLesson}
                     onDelete={handleDeleteLesson}
+                    onResize={handleResizeLesson}
                   />
                 ))}
             </div>
