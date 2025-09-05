@@ -645,7 +645,7 @@ body {
 /* Подсказка с временем при перетаскивании */
 .drag-time-tooltip {
   position: fixed;
-  top: -50px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   background: #000000;
@@ -661,15 +661,7 @@ body {
   border: 2px solid #ffffff;
 }
 
-.drag-time-tooltip::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #000000;
-}
+/* Убираем стрелку, так как подсказка теперь в фиксированной позиции */
 
 .lesson-aligned {
   display: flex;
