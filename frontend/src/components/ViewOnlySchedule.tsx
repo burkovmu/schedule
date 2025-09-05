@@ -89,42 +89,44 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
             <span className="scroll-indicator">
               ← Прокрутите влево/вправо для просмотра всего расписания →
             </span>
-            <div className="zoom-controls">
+            <div className="controls-row">
+              <div className="zoom-controls">
+                <button 
+                  className="zoom-btn"
+                  onClick={handleZoomOut}
+                  disabled={zoomLevel <= 0.5}
+                  title="Уменьшить масштаб"
+                >
+                  −
+                </button>
+                <span className="zoom-level">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button 
+                  className="zoom-btn"
+                  onClick={handleZoomIn}
+                  disabled={zoomLevel >= 2}
+                  title="Увеличить масштаб"
+                >
+                  +
+                </button>
+                <button 
+                  className="zoom-reset-btn"
+                  onClick={handleZoomReset}
+                  title="Сбросить масштаб"
+                >
+                  ⌂
+                </button>
+              </div>
               <button 
-                className="zoom-btn"
-                onClick={handleZoomOut}
-                disabled={zoomLevel <= 0.5}
-                title="Уменьшить масштаб"
+                className="btn-primary login-btn"
+                onClick={onLogin}
+                title="Войти в систему"
+                style={{ padding: '8px 16px', fontSize: '14px' }}
               >
-                −
-              </button>
-              <span className="zoom-level">
-                {Math.round(zoomLevel * 100)}%
-              </span>
-              <button 
-                className="zoom-btn"
-                onClick={handleZoomIn}
-                disabled={zoomLevel >= 2}
-                title="Увеличить масштаб"
-              >
-                +
-              </button>
-              <button 
-                className="zoom-reset-btn"
-                onClick={handleZoomReset}
-                title="Сбросить масштаб"
-              >
-                ⌂
+                Вход
               </button>
             </div>
-            <button 
-              className="btn-primary login-btn"
-              onClick={onLogin}
-              title="Войти в систему"
-              style={{ padding: '8px 16px', fontSize: '14px' }}
-            >
-              Вход
-            </button>
           </div>
         </div>
       </div>

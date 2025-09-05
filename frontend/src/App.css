@@ -250,30 +250,25 @@ body {
     text-align: center;
     font-size: 14px;
     color: #666;
-    order: 1;
+  }
+  
+  /* Контейнер для масштаба и кнопки входа в одной строке */
+  .schedule-actions .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
   }
   
   .schedule-actions .zoom-controls {
-    order: 2;
     display: flex;
     align-items: center;
     gap: 8px;
   }
   
   .schedule-actions .login-btn {
-    order: 2;
     flex-shrink: 0;
-  }
-  
-  /* Группируем масштаб и кнопку входа в одну строку */
-  .schedule-actions .zoom-controls,
-  .schedule-actions .login-btn {
-    display: inline-flex;
-    align-items: center;
-  }
-  
-  .schedule-actions .zoom-controls {
-    margin-right: 16px;
   }
 }
 
@@ -281,6 +276,11 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+/* Контейнер для масштаба и кнопки входа - десктопная версия */
+.schedule-actions .controls-row {
+  display: contents;
 }
 
 /* Элементы управления масштабом */
