@@ -34,19 +34,32 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
-  const [zoomLevel, setZoomLevel] = useState(1);
+  // Инициализация масштаба из localStorage или значение по умолчанию
+  const [zoomLevel, setZoomLevel] = useState(() => {
+    const savedZoom = localStorage.getItem('schedule-zoom-level');
+    return savedZoom ? parseFloat(savedZoom) : 1;
+  });
 
   // Функции для управления масштабом
   const handleZoomIn = useCallback(() => {
-    setZoomLevel(prev => Math.min(prev + 0.1, 2));
+    setZoomLevel(prev => {
+      const newZoom = Math.min(prev + 0.1, 2);
+      localStorage.setItem('schedule-zoom-level', newZoom.toString());
+      return newZoom;
+    });
   }, []);
 
   const handleZoomOut = useCallback(() => {
-    setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
+    setZoomLevel(prev => {
+      const newZoom = Math.max(prev - 0.1, 0.5);
+      localStorage.setItem('schedule-zoom-level', newZoom.toString());
+      return newZoom;
+    });
   }, []);
 
   const handleZoomReset = useCallback(() => {
     setZoomLevel(1);
+    localStorage.setItem('schedule-zoom-level', '1');
   }, []);
 
   const sensors = useSensors(
