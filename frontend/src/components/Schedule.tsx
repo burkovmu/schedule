@@ -28,10 +28,11 @@ interface ScheduleProps {
 }
 
 // Кастомный алгоритм определения коллизий для точного выделения ячеек
-const customCollisionDetection: CollisionDetection = (args) => {
+const createCustomCollisionDetection = (setHoveredTimeSlot: (timeSlotId: string | null) => void): CollisionDetection => (args) => {
   const { active, droppableContainers, pointerCoordinates } = args;
   
   if (!pointerCoordinates) {
+    setHoveredTimeSlot(null);
     return closestCenter(args);
   }
 
@@ -45,6 +46,7 @@ const customCollisionDetection: CollisionDetection = (args) => {
   );
 
   if (scheduleCells.length === 0) {
+    setHoveredTimeSlot(null);
     return closestCenter(args);
   }
 
@@ -62,10 +64,17 @@ const customCollisionDetection: CollisionDetection = (args) => {
   });
 
   if (targetCell) {
+    // Извлекаем timeSlotId из ID ячейки
+    const parts = targetCell.id.toString().split('-');
+    if (parts.length >= 2) {
+      const timeSlotId = parts[parts.length - 1];
+      setHoveredTimeSlot(timeSlotId);
+    }
     return [{ id: targetCell.id }];
   }
 
-  // Если не нашли точное попадание, используем closestCenter как fallback
+  // Если не нашли точное попадание, сбрасываем hoveredTimeSlot
+  setHoveredTimeSlot(null);
   return closestCenter(args);
 };
 
@@ -76,8 +85,16 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [showConflictDialog, setShowConflictDialog] = useState(false);
   const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [hoveredTimeSlot, setHoveredTimeSlot] = useState<string | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
+
+  // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot
+  const customCollisionDetection = useMemo(() => 
+    createCustomCollisionDetection(setHoveredTimeSlot), 
+    []
+  );
+
   // Инициализация масштаба из localStorage или значение по умолчанию
   const [zoomLevel, setZoomLevel] = useState(() => {
     const savedZoom = localStorage.getItem('schedule-zoom-level');
@@ -141,6 +158,12 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   // Использование временных слотов с сервера
   const timeSlots = useMemo(() => scheduleData?.timeSlots || [], [scheduleData]);
 
+  // Функция для получения времени по ID временного слота
+  const getTimeSlotTime = useCallback((timeSlotId: string) => {
+    const timeSlot = timeSlots.find(slot => slot.id === timeSlotId);
+    return timeSlot ? timeSlot.startTime : '';
+  }, [timeSlots]);
+
   // Предварительный расчет позиций уроков - оптимизированная версия
   const lessonsWithPositions = useMemo(() => {
     if (!scheduleData) return [];
@@ -171,6 +194,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     const lesson = lessonsWithPositions.find(l => l.id === lessonId);
     if (lesson) {
       setDraggedLesson(lesson);
+      setHoveredTimeSlot(null); // Сбрасываем при начале перетаскивания
     }
   }, [lessonsWithPositions]);
 
@@ -178,6 +202,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     setDraggedLesson(null);
+    setHoveredTimeSlot(null); // Сбрасываем при завершении перетаскивания
     
     if (!over || !scheduleData) return;
     
@@ -569,12 +594,20 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
 
         <DragOverlay>
           {draggedLesson ? (
-            <div className="lesson dragging">
-              <div className="lesson-title">{draggedLesson.subject_name}</div>
-              <div className="lesson-details">
-                {draggedLesson.teacher_name} • {draggedLesson.room_name}
+            <>
+              <div className="lesson dragging">
+                <div className="lesson-title">{draggedLesson.subject_name}</div>
+                <div className="lesson-details">
+                  {draggedLesson.teacher_name} • {draggedLesson.room_name}
+                </div>
               </div>
-            </div>
+              {/* Подсказка с временем выбранной ячейки - отдельный элемент */}
+              {hoveredTimeSlot && (
+                <div className="drag-time-tooltip">
+                  {getTimeSlotTime(hoveredTimeSlot)}
+                </div>
+              )}
+            </>
           ) : null}
         </DragOverlay>
         </DndContext>
