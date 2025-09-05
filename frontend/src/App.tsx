@@ -157,11 +157,12 @@ function AppContent() {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">Расписание</h1>
-          
-          {isAuthenticated && (
+      {/* Шапка только в режиме редактирования */}
+      {isAuthenticated && (
+        <header className="app-header">
+          <div className="header-content">
+            <h1 className="app-title">Расписание</h1>
+            
             <nav className="header-nav">
               {tabs.map(tab => (
                 <button
@@ -174,10 +175,8 @@ function AppContent() {
                 </button>
               ))}
             </nav>
-          )}
-          
-          <div className="header-actions">
-            {isAuthenticated ? (
+            
+            <div className="header-actions">
               <button 
                 className="btn-secondary logout-btn"
                 onClick={logout}
@@ -185,18 +184,10 @@ function AppContent() {
               >
                 Выход
               </button>
-            ) : (
-              <button 
-                className="btn-primary login-btn"
-                onClick={() => setShowLoginForm(true)}
-                title="Войти в систему"
-              >
-                Вход
-              </button>
-            )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
       
       <main className="app-main">
         {loading ? (

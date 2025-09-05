@@ -133,10 +133,18 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
             <button 
               className="btn-secondary"
               onClick={handleExportToPNG}
-              style={{ padding: '8px 16px', fontSize: '14px' }}
+              style={{ padding: '8px 16px', fontSize: '14px', marginRight: '8px' }}
               title="Экспортировать расписание в PNG"
             >
               📷 PNG
+            </button>
+            <button 
+              className="btn-primary login-btn"
+              onClick={onLogin}
+              title="Войти в систему"
+              style={{ padding: '8px 16px', fontSize: '14px' }}
+            >
+              Вход
             </button>
           </div>
         </div>
