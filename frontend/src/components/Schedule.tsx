@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -97,10 +97,19 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
 
+  // Мемоизированные функции для обновления состояния
+  const updateHoveredTimeSlot = useCallback((timeSlotId: string | null) => {
+    setHoveredTimeSlot(timeSlotId);
+  }, []);
+
+  const updateMousePosition = useCallback((position: { x: number; y: number } | null) => {
+    setMousePosition(position);
+  }, []);
+
   // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot и setMousePosition
   const customCollisionDetection = useMemo(() => 
-    createCustomCollisionDetection(setHoveredTimeSlot, setMousePosition), 
-    []
+    createCustomCollisionDetection(updateHoveredTimeSlot, updateMousePosition), 
+    [updateHoveredTimeSlot, updateMousePosition]
   );
 
   // Инициализация масштаба из localStorage или значение по умолчанию
