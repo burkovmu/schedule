@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { ScheduleData } from '../types';
 import { getLessonSpan } from '../utils/scheduleUtils';
-import { exportScheduleToPNG } from '../utils/exportUtils';
 import ViewOnlyLesson from './ViewOnlyLesson';
 
 interface ViewOnlyScheduleProps {
@@ -38,18 +37,6 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
     localStorage.setItem('schedule-zoom-level', '1');
   }, []);
 
-  // Функция для экспорта расписания в PNG
-  const handleExportToPNG = useCallback(async () => {
-    try {
-      console.log('Начинаем экспорт...');
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `schedule_${timestamp}.png`;
-      
-      await exportScheduleToPNG('schedule-container', filename);
-    } catch (error) {
-      console.error('Ошибка экспорта:', error);
-    }
-  }, []);
 
   // Использование временных слотов с сервера
   const timeSlots = useMemo(() => scheduleData?.timeSlots || [], [scheduleData]);
@@ -130,14 +117,6 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
                 ⌂
               </button>
             </div>
-            <button 
-              className="btn-secondary"
-              onClick={handleExportToPNG}
-              style={{ padding: '8px 16px', fontSize: '14px', marginRight: '8px' }}
-              title="Экспортировать расписание в PNG"
-            >
-              📷 PNG
-            </button>
             <button 
               className="btn-primary login-btn"
               onClick={onLogin}
