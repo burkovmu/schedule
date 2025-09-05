@@ -28,13 +28,20 @@ interface ScheduleProps {
 }
 
 // Кастомный алгоритм определения коллизий для точного выделения ячеек
-const createCustomCollisionDetection = (setHoveredTimeSlot: (timeSlotId: string | null) => void): CollisionDetection => (args) => {
+const createCustomCollisionDetection = (
+  setHoveredTimeSlot: (timeSlotId: string | null) => void,
+  setMousePosition: (position: { x: number; y: number } | null) => void
+): CollisionDetection => (args) => {
   const { droppableContainers, pointerCoordinates } = args;
   
   if (!pointerCoordinates) {
     setHoveredTimeSlot(null);
+    setMousePosition(null);
     return closestCenter(args);
   }
+
+  // Обновляем позицию мыши
+  setMousePosition({ x: pointerCoordinates.x, y: pointerCoordinates.y });
 
   // Находим все droppable элементы
   const droppableElements = Array.from(droppableContainers.values());
@@ -86,12 +93,13 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [hoveredTimeSlot, setHoveredTimeSlot] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
 
-  // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot
+  // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot и setMousePosition
   const customCollisionDetection = useMemo(() => 
-    createCustomCollisionDetection(setHoveredTimeSlot), 
+    createCustomCollisionDetection(setHoveredTimeSlot, setMousePosition), 
     []
   );
 
@@ -195,6 +203,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     if (lesson) {
       setDraggedLesson(lesson);
       setHoveredTimeSlot(null); // Сбрасываем при начале перетаскивания
+      setMousePosition(null); // Сбрасываем позицию мыши
     }
   }, [lessonsWithPositions]);
 
@@ -203,6 +212,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     const { active, over } = event;
     setDraggedLesson(null);
     setHoveredTimeSlot(null); // Сбрасываем при завершении перетаскивания
+    setMousePosition(null); // Сбрасываем позицию мыши
     
     if (!over || !scheduleData) return;
     
@@ -601,9 +611,15 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
                   {draggedLesson.teacher_name} • {draggedLesson.room_name}
                 </div>
               </div>
-              {/* Подсказка с временем выбранной ячейки - отдельный элемент */}
-              {hoveredTimeSlot && (
-                <div className="drag-time-tooltip">
+              {/* Подсказка с временем выбранной ячейки - позиционируется по координатам мыши */}
+              {hoveredTimeSlot && mousePosition && (
+                <div 
+                  className="drag-time-tooltip"
+                  style={{
+                    left: mousePosition.x,
+                    top: mousePosition.y - 50,
+                  }}
+                >
                   {getTimeSlotTime(hoveredTimeSlot)}
                 </div>
               )}

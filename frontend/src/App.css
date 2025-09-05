@@ -644,9 +644,7 @@ body {
 
 /* Подсказка с временем при перетаскивании */
 .drag-time-tooltip {
-  position: fixed;
-  top: 20px;
-  left: 50%;
+  position: absolute;
   transform: translateX(-50%);
   background: #000000;
   color: white;
