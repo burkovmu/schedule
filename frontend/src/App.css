@@ -254,7 +254,7 @@ body {
   
   /* Контейнер для масштаба и кнопки входа в одной строке */
   .schedule-actions .controls-row {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
     gap: 16px;
