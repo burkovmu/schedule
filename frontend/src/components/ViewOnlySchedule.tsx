@@ -81,21 +81,14 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
       {/* Отдельная полоса сверху - фиксированная ширина экрана */}
       <div className="schedule-info-bar">
         <div className="schedule-info-content">
-          {/* Первая строка: Заголовок */}
-          <div className="schedule-title-row">
+          <div>
             <strong>Расписание</strong>
             <span className="view-mode-indicator"> (Режим просмотра)</span>
           </div>
-          
-          {/* Вторая строка: Индикатор прокрутки */}
-          <div className="schedule-scroll-row">
+          <div className="schedule-actions">
             <span className="scroll-indicator">
               ← Прокрутите влево/вправо для просмотра всего расписания →
             </span>
-          </div>
-          
-          {/* Третья строка: Масштаб и кнопка входа */}
-          <div className="schedule-controls-row">
             <div className="zoom-controls">
               <button 
                 className="zoom-btn"

@@ -234,36 +234,34 @@ body {
     gap: 8px;
   }
   
-  .schedule-title-row {
+  .schedule-info-content > div:first-child {
     text-align: center;
     font-size: 18px;
     font-weight: 600;
   }
   
-  .schedule-scroll-row {
-    text-align: center;
+  .schedule-actions {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
   }
   
-  .schedule-scroll-row .scroll-indicator {
+  .schedule-actions .scroll-indicator {
+    text-align: center;
     font-size: 14px;
     color: #666;
+    order: 1;
   }
   
-  .schedule-controls-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .schedule-controls-row .zoom-controls {
+  .schedule-actions .zoom-controls {
+    order: 2;
     display: flex;
     align-items: center;
     gap: 8px;
   }
   
-  .schedule-controls-row .login-btn {
+  .schedule-actions .login-btn {
+    order: 3;
     flex-shrink: 0;
   }
 }
