@@ -618,6 +618,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
           assistants={scheduleData.assistants}
           rooms={scheduleData.rooms}
           timeSlots={timeSlots}
+          existingLessons={lessonsWithPositions}
           onClose={() => {
             setShowEditForm(false);
             setEditingLesson(null);

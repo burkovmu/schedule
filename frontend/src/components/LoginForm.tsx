@@ -99,11 +99,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
           </div>
         </form>
         
-        <div className="login-info">
-          <p><strong>Демо-доступ:</strong></p>
-          <p>Логин: <code>admin</code></p>
-          <p>Пароль: <code>admin123</code></p>
-        </div>
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lesson, Group, Subject, Teacher, Assistant, Room, TimeSlot } from '../types';
 import { updateLesson, deleteLesson } from '../utils/api';
-// import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
+import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
+import RoomSearch from './RoomSearch';
 
 interface EditLessonFormProps {
   lesson: Lesson;
@@ -11,6 +12,7 @@ interface EditLessonFormProps {
   assistants: Assistant[];
   rooms: Room[];
   timeSlots: TimeSlot[];
+  existingLessons?: Lesson[];
   onClose: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
@@ -25,6 +27,7 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
   assistants,
   rooms,
   timeSlots,
+  existingLessons = [],
   onClose,
   onSuccess,
   onError,
@@ -43,6 +46,16 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
+  const [showRoomSearch, setShowRoomSearch] = useState(false);
+
+  // Показываем поиск кабинетов при изменении времени или длительности
+  useEffect(() => {
+    if (formData.time_slot && formData.duration) {
+      setShowRoomSearch(true);
+    } else {
+      setShowRoomSearch(false);
+    }
+  }, [formData.time_slot, formData.duration]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +116,11 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
       
       return newData;
     });
+  };
+
+  // Обработчик выбора кабинета из списка свободных
+  const handleRoomSelect = (roomId: string) => {
+    handleInputChange('room_id', roomId);
   };
 
   // const selectedSubject = subjects.find(s => s.id === formData.subject_id); // ESLint fix
@@ -257,6 +275,23 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
               />
             </div>
           </div>
+
+          {/* Поиск свободных кабинетов */}
+          {showRoomSearch && formData.time_slot && formData.duration && (
+            <div className="form-row">
+              <div className="form-group full-width">
+                <RoomSearch
+                  timeSlotId={formData.time_slot}
+                  duration={formData.duration}
+                  allLessons={existingLessons}
+                  allRooms={rooms}
+                  timeSlots={timeSlots}
+                  onRoomSelect={handleRoomSelect}
+                  selectedRoomId={formData.room_id}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">

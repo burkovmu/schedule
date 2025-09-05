@@ -1,4 +1,4 @@
-import { TimeSlot, Lesson } from '../types';
+import { TimeSlot, Lesson, Room } from '../types';
 
 // Генерация временных слотов
 export const generateTimeSlots = (): TimeSlot[] => {
@@ -131,4 +131,55 @@ export const isHourStart = (slotIndex: number): boolean => {
 // Проверка, является ли слот началом получаса
 export const isHalfHourStart = (slotIndex: number): boolean => {
   return slotIndex % 6 === 0;
+};
+
+// Поиск свободных кабинетов для выбранного временного слота
+export const findAvailableRooms = (
+  timeSlotId: string,
+  duration: number,
+  allLessons: Lesson[],
+  allRooms: Room[],
+  timeSlots: TimeSlot[]
+): Room[] => {
+  if (!timeSlotId || !allRooms.length || !timeSlots.length) {
+    return [];
+  }
+
+  // Находим индекс выбранного временного слота
+  const timeSlotIndex = timeSlots.findIndex(slot => slot.id === timeSlotId);
+  if (timeSlotIndex === -1) {
+    return [];
+  }
+
+  // Вычисляем диапазон слотов, которые займет урок
+  const lessonSpan = getLessonSpan(duration);
+  const startSlotIndex = timeSlotIndex;
+  const endSlotIndex = timeSlotIndex + lessonSpan - 1;
+
+  // Находим все уроки, которые пересекаются с выбранным временным диапазоном
+  const conflictingLessons = allLessons.filter(lesson => {
+    const lessonStart = lesson.startSlotIndex || 0;
+    const lessonEnd = lesson.endSlotIndex || 0;
+    
+    // Проверяем пересечение времени
+    return lessonStart < endSlotIndex && lessonEnd > startSlotIndex;
+  });
+
+  // Получаем ID занятых кабинетов
+  const occupiedRoomIds = new Set(conflictingLessons.map(lesson => lesson.room_id));
+
+  // Возвращаем только свободные кабинеты
+  return allRooms.filter(room => !occupiedRoomIds.has(room.id));
+};
+
+// Проверка доступности кабинета в конкретном временном слоте
+export const isRoomAvailable = (
+  roomId: string,
+  timeSlotId: string,
+  duration: number,
+  allLessons: Lesson[],
+  timeSlots: TimeSlot[]
+): boolean => {
+  const availableRooms = findAvailableRooms(timeSlotId, duration, allLessons, [{ id: roomId, name: '' }], timeSlots);
+  return availableRooms.length > 0;
 };

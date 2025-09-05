@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lesson, Group, Subject, Teacher, Assistant, Room, TimeSlot } from '../types';
 import { createLesson } from '../utils/api';
 import { validateLesson, ConflictInfo, getLessonSpan } from '../utils/scheduleUtils';
+import RoomSearch from './RoomSearch';
 
 interface LessonFormProps {
   groups: Group[];
@@ -47,6 +48,16 @@ const LessonForm: React.FC<LessonFormProps> = ({
   });
 
   const [loading, setLoading] = useState(false);
+  const [showRoomSearch, setShowRoomSearch] = useState(false);
+
+  // Показываем поиск кабинетов при выборе времени и длительности
+  useEffect(() => {
+    if (formData.time_slot && formData.duration) {
+      setShowRoomSearch(true);
+    } else {
+      setShowRoomSearch(false);
+    }
+  }, [formData.time_slot, formData.duration]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +133,11 @@ const LessonForm: React.FC<LessonFormProps> = ({
       
       return newData;
     });
+  };
+
+  // Обработчик выбора кабинета из списка свободных
+  const handleRoomSelect = (roomId: string) => {
+    handleInputChange('room_id', roomId);
   };
 
   // const selectedSubject = subjects.find(s => s.id === formData.subject_id); // ESLint fix
@@ -275,6 +291,23 @@ const LessonForm: React.FC<LessonFormProps> = ({
               />
             </div>
           </div>
+
+          {/* Поиск свободных кабинетов */}
+          {showRoomSearch && formData.time_slot && formData.duration && (
+            <div className="form-row">
+              <div className="form-group full-width">
+                <RoomSearch
+                  timeSlotId={formData.time_slot}
+                  duration={formData.duration}
+                  allLessons={existingLessons}
+                  allRooms={rooms}
+                  timeSlots={timeSlots}
+                  onRoomSelect={handleRoomSelect}
+                  selectedRoomId={formData.room_id}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="form-row">
             <div className="form-group">

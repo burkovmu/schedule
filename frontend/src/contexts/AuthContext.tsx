@@ -17,7 +17,7 @@ interface AuthProviderProps {
 // Простые учетные данные для демонстрации
 const ADMIN_CREDENTIALS = {
   username: 'admin',
-  password: 'admin123'
+  password: 'admin0509'
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
