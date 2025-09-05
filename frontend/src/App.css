@@ -22,6 +22,24 @@ body {
   flex-direction: column;
 }
 
+/* Стили для режима встраивания в Tilda */
+.app.embedded-mode {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: white;
+}
+
+.app.embedded-mode .app-header {
+  display: none !important;
+}
+
+.app.embedded-mode .app-main {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
 /* Header */
 .app-header {
   background: rgba(255, 255, 255, 0.8);

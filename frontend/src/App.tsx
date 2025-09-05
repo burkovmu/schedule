@@ -5,6 +5,7 @@ import ViewOnlySchedule from './components/ViewOnlySchedule';
 import ReferenceManager from './components/ReferenceManager';
 import NotificationSystem from './components/NotificationSystem';
 import LoginForm from './components/LoginForm';
+import TildaWidget from './components/TildaWidget';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Notification, ScheduleData } from './types';
 import { fetchScheduleData } from './utils/api';
@@ -19,6 +20,11 @@ function AppContent() {
   const [showLoginForm, setShowLoginForm] = useState(false);
   
   const { isAuthenticated, logout } = useAuth();
+
+  // Проверяем, находимся ли мы в режиме встраивания
+  const isEmbedded = window.location.pathname === '/embed.html' || 
+                     window.location.search.includes('embed=true') ||
+                     window.parent !== window; // Проверка на iframe
 
   const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -154,6 +160,18 @@ function AppContent() {
         return null;
     }
   };
+
+  // Если мы в режиме встраивания, показываем только виджет
+  if (isEmbedded) {
+    return (
+      <div className="app embedded-mode">
+        <TildaWidget 
+          height="100vh"
+          width="100%"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
