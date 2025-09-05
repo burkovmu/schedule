@@ -10,14 +10,29 @@ export const exportScheduleToPNG = async (
   filename: string = 'schedule.png'
 ): Promise<void> => {
   try {
-    console.log('Начинаем простой экспорт...', { elementId, filename });
+    console.log('Начинаем экспорт с скрытием элементов редактирования...', { elementId, filename });
     
     const element = document.getElementById(elementId);
     if (!element) {
       throw new Error(`Элемент с ID "${elementId}" не найден`);
     }
 
-    console.log('Элемент найден, создаем canvas...');
+    console.log('Элемент найден, скрываем элементы редактирования...');
+
+    // Скрываем элементы редактирования
+    const editElements = element.querySelectorAll('.lesson-actions, .lesson-resize-btn, .btn-edit, .btn-delete, .btn-edit-small, .btn-delete-small');
+    const originalStyles: { element: Element; display: string }[] = [];
+    
+    editElements.forEach(el => {
+      const htmlEl = el as HTMLElement;
+      originalStyles.push({ element: el, display: htmlEl.style.display });
+      htmlEl.style.display = 'none';
+    });
+
+    // Ждем применения изменений
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    console.log('Создаем canvas...');
 
     // Создаем canvas с высоким разрешением
     const canvas = await html2canvas(element, {
@@ -30,6 +45,12 @@ export const exportScheduleToPNG = async (
     });
 
     console.log('Canvas создан:', canvas.width, 'x', canvas.height);
+
+    // Восстанавливаем элементы редактирования
+    originalStyles.forEach(({ element, display }) => {
+      const htmlEl = element as HTMLElement;
+      htmlEl.style.display = display;
+    });
 
     // Создаем ссылку для скачивания
     const link = document.createElement('a');
@@ -60,7 +81,7 @@ export const exportScheduleWithZoom = async (
   filename: string = 'schedule.png'
 ): Promise<void> => {
   try {
-    console.log('Начинаем экспорт расписания...', { elementId, zoomLevel, filename });
+    console.log('Начинаем экспорт расписания с масштабом...', { elementId, zoomLevel, filename });
     
     const element = document.getElementById(elementId);
     if (!element) {
@@ -68,7 +89,17 @@ export const exportScheduleWithZoom = async (
       throw new Error(`Элемент с ID "${elementId}" не найден`);
     }
 
-    console.log('Элемент найден:', element);
+    console.log('Элемент найден, скрываем элементы редактирования...');
+
+    // Скрываем элементы редактирования
+    const editElements = element.querySelectorAll('.lesson-actions, .lesson-resize-btn, .btn-edit, .btn-delete, .btn-edit-small, .btn-delete-small');
+    const originalStyles: { element: Element; display: string }[] = [];
+    
+    editElements.forEach(el => {
+      const htmlEl = el as HTMLElement;
+      originalStyles.push({ element: el, display: htmlEl.style.display });
+      htmlEl.style.display = 'none';
+    });
 
     // Временно сбрасываем масштаб для корректного экспорта
     const originalTransform = element.style.transform;
@@ -99,6 +130,12 @@ export const exportScheduleWithZoom = async (
     // Восстанавливаем оригинальный масштаб
     element.style.transform = originalTransform;
     element.style.height = originalHeight;
+
+    // Восстанавливаем элементы редактирования
+    originalStyles.forEach(({ element, display }) => {
+      const htmlEl = element as HTMLElement;
+      htmlEl.style.display = display;
+    });
 
     // Создаем ссылку для скачивания
     const link = document.createElement('a');
