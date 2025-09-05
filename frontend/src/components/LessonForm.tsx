@@ -183,10 +183,17 @@ const LessonForm: React.FC<LessonFormProps> = ({
                 value={formData.duration}
                 onChange={(e) => handleInputChange('duration', parseInt(e.target.value))}
               >
+                <option value={10}>10 минут</option>
+                <option value={15}>15 минут</option>
+                <option value={20}>20 минут</option>
+                <option value={25}>25 минут</option>
                 <option value={30}>30 минут</option>
+                <option value={35}>35 минут</option>
+                <option value={40}>40 минут</option>
                 <option value={45}>45 минут</option>
+                <option value={50}>50 минут</option>
+                <option value={55}>55 минут</option>
                 <option value={60}>60 минут</option>
-                <option value={90}>90 минут</option>
               </select>
             </div>
           </div>
