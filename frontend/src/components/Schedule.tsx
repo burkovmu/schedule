@@ -8,7 +8,8 @@ import {
   KeyboardSensor,
   closestCenter,
   DragEndEvent,
-  DragStartEvent
+  DragStartEvent,
+  CollisionDetection
 } from '@dnd-kit/core';
 import { ScheduleData, Lesson, Notification } from '../types';
 import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
@@ -25,6 +26,48 @@ interface ScheduleProps {
   onNotification: (notification: Omit<Notification, 'id'>) => void;
   onRefresh: () => Promise<void>;
 }
+
+// Кастомный алгоритм определения коллизий для точного выделения ячеек
+const customCollisionDetection: CollisionDetection = (args) => {
+  const { active, droppableContainers, pointerCoordinates } = args;
+  
+  if (!pointerCoordinates) {
+    return closestCenter(args);
+  }
+
+  // Находим все droppable элементы
+  const droppableElements = Array.from(droppableContainers.values());
+  
+  // Фильтруем только ячейки расписания (исключаем уроки)
+  const scheduleCells = droppableElements.filter(element => 
+    element.id.toString().includes('-') && 
+    !element.id.toString().startsWith('lesson-')
+  );
+
+  if (scheduleCells.length === 0) {
+    return closestCenter(args);
+  }
+
+  // Находим ячейку, которая содержит координаты мыши
+  const targetCell = scheduleCells.find(element => {
+    const rect = element.rect.current;
+    if (!rect) return false;
+    
+    return (
+      pointerCoordinates.x >= rect.left &&
+      pointerCoordinates.x <= rect.right &&
+      pointerCoordinates.y >= rect.top &&
+      pointerCoordinates.y <= rect.bottom
+    );
+  });
+
+  if (targetCell) {
+    return [{ id: targetCell.id }];
+  }
+
+  // Если не нашли точное попадание, используем closestCenter как fallback
+  return closestCenter(args);
+};
 
 const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRefresh }) => {
   const [draggedLesson, setDraggedLesson] = useState<Lesson | null>(null);
@@ -437,7 +480,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
         >
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={customCollisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
