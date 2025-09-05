@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,36 +16,46 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Временное хранилище в памяти (для Vercel)
-let dataStore = {
-  groups: [
-    { id: 'group1', name: 'Группа А', display_order: 1 },
-    { id: 'group2', name: 'Группа Б', display_order: 2 },
-    { id: 'group3', name: 'Группа В', display_order: 3 }
-  ],
-  subjects: [
-    { id: 'subj1', name: 'Математика', color: '#667eea' },
-    { id: 'subj2', name: 'Физика', color: '#f093fb' },
-    { id: 'subj3', name: 'Химия', color: '#4facfe' },
-    { id: 'subj4', name: 'Биология', color: '#43e97b' }
-  ],
-  teachers: [
-    { id: 'teach1', name: 'Иванов И.И.' },
-    { id: 'teach2', name: 'Петров П.П.' },
-    { id: 'teach3', name: 'Сидоров С.С.' }
-  ],
-  assistants: [
-    { id: 'assist1', name: 'Козлов К.К.' },
-    { id: 'assist2', name: 'Морозов М.М.' }
-  ],
-  rooms: [
-    { id: 'room1', name: 'Аудитория 101' },
-    { id: 'room2', name: 'Аудитория 102' },
-    { id: 'room3', name: 'Лаборатория 201' },
-    { id: 'room4', name: 'Лаборатория 202' }
-  ],
-  lessons: []
-};
+// Загружаем данные из JSON файла
+let dataStore;
+try {
+  const dataPath = path.join(__dirname, 'data.json');
+  const dataContent = fs.readFileSync(dataPath, 'utf8');
+  dataStore = JSON.parse(dataContent);
+  console.log('✅ Данные загружены из data.json');
+} catch (error) {
+  console.log('⚠️ Не удалось загрузить data.json, используем тестовые данные');
+  // Временное хранилище в памяти (для Vercel)
+  dataStore = {
+    groups: [
+      { id: 'group1', name: 'Группа А', display_order: 1 },
+      { id: 'group2', name: 'Группа Б', display_order: 2 },
+      { id: 'group3', name: 'Группа В', display_order: 3 }
+    ],
+    subjects: [
+      { id: 'subj1', name: 'Математика', color: '#667eea' },
+      { id: 'subj2', name: 'Физика', color: '#f093fb' },
+      { id: 'subj3', name: 'Химия', color: '#4facfe' },
+      { id: 'subj4', name: 'Биология', color: '#43e97b' }
+    ],
+    teachers: [
+      { id: 'teach1', name: 'Иванов И.И.' },
+      { id: 'teach2', name: 'Петров П.П.' },
+      { id: 'teach3', name: 'Сидоров С.С.' }
+    ],
+    assistants: [
+      { id: 'assist1', name: 'Козлов К.К.' },
+      { id: 'assist2', name: 'Морозов М.М.' }
+    ],
+    rooms: [
+      { id: 'room1', name: 'Аудитория 101' },
+      { id: 'room2', name: 'Аудитория 102' },
+      { id: 'room3', name: 'Лаборатория 201' },
+      { id: 'room4', name: 'Лаборатория 202' }
+    ],
+    lessons: []
+  };
+}
 
 // Генерация временных слотов
 const generateTimeSlots = () => {

@@ -1,19 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import Schedule from './components/Schedule';
+import ViewOnlySchedule from './components/ViewOnlySchedule';
 import ReferenceManager from './components/ReferenceManager';
 import NotificationSystem from './components/NotificationSystem';
+import LoginForm from './components/LoginForm';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Notification, ScheduleData } from './types';
 import { fetchScheduleData } from './utils/api';
 
 type TabType = 'schedule' | 'teachers' | 'subjects' | 'rooms' | 'groups' | 'assistants';
 
-function App() {
+function AppContent() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-
   const [scheduleData, setScheduleData] = useState<ScheduleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('schedule');
+  const [showLoginForm, setShowLoginForm] = useState(false);
+  
+  const { isAuthenticated, logout } = useAuth();
 
   const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
@@ -69,6 +74,17 @@ function App() {
       );
     }
 
+    // Если пользователь не аутентифицирован, показываем только расписание в режиме просмотра
+    if (!isAuthenticated) {
+      return (
+        <ViewOnlySchedule 
+          scheduleData={scheduleData}
+          onLogin={() => setShowLoginForm(true)}
+        />
+      );
+    }
+
+    // Если пользователь аутентифицирован, показываем полную версию
     switch (activeTab) {
       case 'schedule':
         return (
@@ -145,20 +161,40 @@ function App() {
         <div className="header-content">
           <h1 className="app-title">Расписание</h1>
           
-          <nav className="header-nav">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                className={`nav-button ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <span className="nav-icon">{tab.icon}</span>
-                <span className="nav-label">{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+          {isAuthenticated && (
+            <nav className="header-nav">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  className={`nav-button ${activeTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <span className="nav-icon">{tab.icon}</span>
+                  <span className="nav-label">{tab.label}</span>
+                </button>
+              ))}
+            </nav>
+          )}
           
-
+          <div className="header-actions">
+            {isAuthenticated ? (
+              <button 
+                className="btn-secondary logout-btn"
+                onClick={logout}
+                title="Выйти из системы"
+              >
+                Выход
+              </button>
+            ) : (
+              <button 
+                className="btn-primary login-btn"
+                onClick={() => setShowLoginForm(true)}
+                title="Войти в систему"
+              >
+                Вход
+              </button>
+            )}
+          </div>
         </div>
       </header>
       
@@ -174,7 +210,20 @@ function App() {
         notifications={notifications}
         onRemove={removeNotification}
       />
+      
+      {/* Модальное окно входа */}
+      {showLoginForm && (
+        <LoginForm onClose={() => setShowLoginForm(false)} />
+      )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 
