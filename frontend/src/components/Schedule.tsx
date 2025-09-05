@@ -13,6 +13,7 @@ import {
 import { ScheduleData, Lesson, Notification } from '../types';
 import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
 import { updateLesson, deleteLesson } from '../utils/api';
+import { exportScheduleToPNG } from '../utils/exportUtils';
 import DraggableLesson from './DraggableLesson';
 import DroppableCell from './DroppableCell';
 import LessonForm from './LessonForm';
@@ -61,6 +62,29 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     setZoomLevel(1);
     localStorage.setItem('schedule-zoom-level', '1');
   }, []);
+
+  // Функция для экспорта расписания в PNG
+  const handleExportToPNG = useCallback(async () => {
+    try {
+      console.log('Начинаем экспорт...');
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `schedule_${timestamp}.png`;
+      
+      await exportScheduleToPNG('schedule-container', filename);
+      
+      onNotification({
+        type: 'success',
+        message: 'Расписание успешно экспортировано в PNG'
+      });
+    } catch (error) {
+      console.error('Ошибка экспорта:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      onNotification({
+        type: 'error',
+        message: `Ошибка при экспорте расписания: ${errorMessage}`
+      });
+    }
+  }, [onNotification]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -378,6 +402,14 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
               </button>
             </div>
             <button 
+              className="btn-secondary"
+              onClick={handleExportToPNG}
+              style={{ padding: '8px 16px', fontSize: '14px', marginRight: '8px' }}
+              title="Экспортировать расписание в PNG"
+            >
+              📷 PNG
+            </button>
+            <button 
               className="btn-primary"
               onClick={() => {
                 setSelectedGroupId(undefined);
@@ -395,6 +427,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
       {/* Прокручиваемая таблица расписания */}
       <div className="schedule-wrapper">
         <div 
+          id="schedule-container"
           className="schedule-container"
           style={{ 
             transform: `scale(${zoomLevel})`,
