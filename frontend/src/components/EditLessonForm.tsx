@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Lesson, Group, Subject, Teacher, Assistant, Room, TimeSlot } from '../types';
 import { updateLesson, deleteLesson } from '../utils/api';
-import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
 import RoomSearch from './RoomSearch';
 
 interface EditLessonFormProps {
