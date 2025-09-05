@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Teacher, Subject, Room, Group, Assistant } from '../types';
 import { createTeacher, deleteTeacher } from '../utils/api';
-import { createSubject, deleteSubject } from '../utils/api';
+import { createSubject, updateSubject, deleteSubject } from '../utils/api';
 import { createRoom, deleteRoom } from '../utils/api';
 import { createGroup, deleteGroup } from '../utils/api';
 import { createAssistant, deleteAssistant } from '../utils/api';
+import BulkUploadDialog from './BulkUploadDialog';
 
 interface ReferenceManagerProps {
   type: 'teachers' | 'subjects' | 'rooms' | 'groups' | 'assistants';
@@ -22,6 +23,7 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
   onNotification
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
@@ -32,8 +34,24 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
     setShowAddForm(true);
   };
 
+  const handleBulkUpload = () => {
+    setShowBulkUpload(true);
+  };
+
+  const handleBulkSuccess = (count: number) => {
+    onRefresh();
+  };
+
   const handleEdit = (item: any) => {
-    setFormData({ ...item });
+    // Инициализируем formData в зависимости от типа
+    const initialData = { ...item };
+    
+    // Для предметов убеждаемся, что цвет установлен
+    if (type === 'subjects' && !initialData.color) {
+      initialData.color = '#667eea';
+    }
+    
+    setFormData(initialData);
     setEditingItem(item);
     setShowAddForm(true);
   };
@@ -93,7 +111,19 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
     try {
       if (editingItem) {
         // Обновление существующего элемента
-        // TODO: Добавить API для обновления
+        switch (type) {
+          case 'subjects':
+            await updateSubject(editingItem.id, formData);
+            break;
+          // TODO: Добавить API для обновления других типов
+          default:
+            onNotification({
+              type: 'error',
+              message: 'Редактирование этого типа элементов пока не поддерживается'
+            });
+            return;
+        }
+        
         onNotification({
           type: 'success',
           message: 'Элемент обновлен успешно'
@@ -163,13 +193,23 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
             </div>
             <div className="form-group">
               <label htmlFor="color">Цвет *</label>
-              <input
-                type="color"
-                id="color"
-                value={formData.color || '#667eea'}
-                onChange={(e) => handleInputChange('color', e.target.value)}
-                required
-              />
+              <div className="color-input-group">
+                <input
+                  type="color"
+                  id="color"
+                  value={formData.color || '#667eea'}
+                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  className="color-picker"
+                  required
+                />
+                <div className="color-preview">
+                  <div 
+                    className="color-sample"
+                    style={{ backgroundColor: formData.color || '#667eea' }}
+                  ></div>
+                  <span className="color-value">{formData.color || '#667eea'}</span>
+                </div>
+              </div>
             </div>
           </>
         );
@@ -220,9 +260,14 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
     <div className="reference-manager">
       <div className="reference-header">
         <h2>{title}</h2>
-        <button className="btn-primary" onClick={handleAdd}>
-          + Добавить
-        </button>
+        <div className="reference-actions">
+          <button className="btn-secondary" onClick={handleBulkUpload}>
+            📋 Массовое добавление
+          </button>
+          <button className="btn-primary" onClick={handleAdd}>
+            + Добавить
+          </button>
+        </div>
       </div>
 
       <div className="reference-list">
@@ -309,13 +354,23 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
                   Отмена
                 </button>
                 <button type="submit" disabled={loading} className="btn-primary">
-                  {loading ? 'Сохранение...' : (editingItem ? 'Сохранить' : 'Создать')}
+                  {loading ? 'Сохранение...' : (editingItem ? 'Сохранить изменения' : 'Создать')}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Диалог массовой загрузки */}
+      <BulkUploadDialog
+        type={type}
+        title={title}
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+        onSuccess={handleBulkSuccess}
+        onNotification={onNotification}
+      />
     </div>
   );
 };

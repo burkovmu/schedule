@@ -1172,6 +1172,199 @@ body {
   box-sizing: border-box;
 }
 
+/* Bulk Upload Dialog Styles */
+.bulk-upload-content {
+  padding: 24px;
+}
+
+.bulk-upload-description {
+  color: #6e6e73;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #007aff;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.description-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.description-text {
+  flex: 1;
+}
+
+.bulk-upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bulk-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 16px;
+  border: 2px solid #d2d2d7;
+  border-radius: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.bulk-textarea:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.bulk-textarea:disabled {
+  background-color: #f5f5f7;
+  color: #8e8e93;
+  cursor: not-allowed;
+  border-color: #e5e5ea;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #8e8e93;
+  margin-top: 8px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e5ea;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Улучшенные стили для модального окна массовой загрузки */
+.modal-content .bulk-upload-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.modal-content .bulk-upload-content .form-group {
+  margin-bottom: 0;
+}
+
+.modal-content .bulk-upload-content .form-group label {
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.modal-content .bulk-upload-content .form-actions {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e5ea;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .modal-content .bulk-upload-content .form-actions {
+    flex-direction: column;
+  }
+  
+  .modal-content .bulk-upload-content .form-actions button {
+    width: 100%;
+  }
+}
+
+.reference-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .reference-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+  
+  .reference-actions .btn-secondary,
+  .reference-actions .btn-primary {
+    width: 100%;
+  }
+}
+
+/* Стили для выбора цвета в форме редактирования урока */
+.color-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e5ea;
+}
+
+.color-picker {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+.color-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-sample {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.color-value {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  color: #6e6e73;
+  background-color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #d2d2d7;
+}
+
 /* Desktop version - ограничение ширины для справочников */
 @media (min-width: 1025px) {
   .reference-manager {

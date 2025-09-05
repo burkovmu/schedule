@@ -42,6 +42,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
     assistant_id: '',
     room_id: '',
     duration: 45,
+    color: '#667eea',
     comment: ''
   });
 
@@ -105,10 +106,22 @@ const LessonForm: React.FC<LessonFormProps> = ({
   };
 
   const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Если изменился предмет, обновляем цвет автоматически
+      if (field === 'subject_id') {
+        const selectedSubject = subjects.find(s => s.id === value);
+        if (selectedSubject) {
+          newData.color = selectedSubject.color;
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const selectedSubject = subjects.find(s => s.id === formData.subject_id);
@@ -263,18 +276,27 @@ const LessonForm: React.FC<LessonFormProps> = ({
             </div>
           </div>
 
-          {selectedSubject && (
-            <div className="form-row">
-              <div className="color-preview">
-                <span>Цвет урока:</span>
-                <div 
-                  className="color-sample"
-                  style={{ backgroundColor: selectedSubject.color }}
-                ></div>
-                <span>{selectedSubject.color}</span>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="color">Цвет урока</label>
+              <div className="color-input-group">
+                <input
+                  type="color"
+                  id="color"
+                  value={formData.color}
+                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  className="color-picker"
+                />
+                <div className="color-preview">
+                  <div 
+                    className="color-sample"
+                    style={{ backgroundColor: formData.color }}
+                  ></div>
+                  <span className="color-value">{formData.color}</span>
+                </div>
               </div>
             </div>
-          )}
+          </div>
 
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary">

@@ -194,6 +194,48 @@ app.delete('/api/groups/:id', (req, res) => {
   });
 });
 
+app.post('/api/groups/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const groups = [];
+  let completed = 0;
+  let hasError = false;
+
+  names.forEach((name, index) => {
+    if (!name || name.trim() === '') {
+      completed++;
+      if (completed === names.length && !hasError) {
+        res.json(groups);
+      }
+      return;
+    }
+
+    const id = uuidv4();
+    db.run('INSERT INTO groups (id, name, display_order) VALUES (?, ?, ?)', 
+      [id, name.trim(), index + 1], 
+      function(err) {
+        completed++;
+        if (err) {
+          hasError = true;
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        groups.push({ id, name: name.trim(), display_order: index + 1 });
+        
+        if (completed === names.length && !hasError) {
+          res.json(groups);
+        }
+      }
+    );
+  });
+});
+
 // Предметы
 app.get('/api/subjects', (req, res) => {
   db.all('SELECT * FROM subjects', (err, rows) => {
@@ -221,6 +263,38 @@ app.post('/api/subjects', (req, res) => {
   );
 });
 
+app.put('/api/subjects/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  // Строим динамический SQL запрос только для переданных полей
+  const fields = [];
+  const values = [];
+  
+  Object.keys(updates).forEach(key => {
+    if (updates[key] !== undefined) {
+      fields.push(`${key} = ?`);
+      values.push(updates[key]);
+    }
+  });
+  
+  if (fields.length === 0) {
+    res.status(400).json({ error: 'Нет полей для обновления' });
+    return;
+  }
+  
+  values.push(id);
+  const sql = `UPDATE subjects SET ${fields.join(', ')} WHERE id = ?`;
+  
+  db.run(sql, values, function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json({ message: 'Предмет обновлен' });
+  });
+});
+
 app.delete('/api/subjects/:id', (req, res) => {
   const { id } = req.params;
   
@@ -230,6 +304,48 @@ app.delete('/api/subjects/:id', (req, res) => {
       return;
     }
     res.json({ message: 'Предмет удален' });
+  });
+});
+
+app.post('/api/subjects/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const subjects = [];
+  let completed = 0;
+  let hasError = false;
+
+  names.forEach((name, index) => {
+    if (!name || name.trim() === '') {
+      completed++;
+      if (completed === names.length && !hasError) {
+        res.json(subjects);
+      }
+      return;
+    }
+
+    const id = uuidv4();
+    db.run('INSERT INTO subjects (id, name, color) VALUES (?, ?, ?)', 
+      [id, name.trim(), '#667eea'], 
+      function(err) {
+        completed++;
+        if (err) {
+          hasError = true;
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        subjects.push({ id, name: name.trim(), color: '#667eea' });
+        
+        if (completed === names.length && !hasError) {
+          res.json(subjects);
+        }
+      }
+    );
   });
 });
 
@@ -272,6 +388,48 @@ app.delete('/api/teachers/:id', (req, res) => {
   });
 });
 
+app.post('/api/teachers/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const teachers = [];
+  let completed = 0;
+  let hasError = false;
+
+  names.forEach((name, index) => {
+    if (!name || name.trim() === '') {
+      completed++;
+      if (completed === names.length && !hasError) {
+        res.json(teachers);
+      }
+      return;
+    }
+
+    const id = uuidv4();
+    db.run('INSERT INTO teachers (id, name) VALUES (?, ?)', 
+      [id, name.trim()], 
+      function(err) {
+        completed++;
+        if (err) {
+          hasError = true;
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        teachers.push({ id, name: name.trim() });
+        
+        if (completed === names.length && !hasError) {
+          res.json(teachers);
+        }
+      }
+    );
+  });
+});
+
 // Ассистенты
 app.get('/api/assistants', (req, res) => {
   db.all('SELECT * FROM assistants', (err, rows) => {
@@ -311,6 +469,48 @@ app.delete('/api/assistants/:id', (req, res) => {
   });
 });
 
+app.post('/api/assistants/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const assistants = [];
+  let completed = 0;
+  let hasError = false;
+
+  names.forEach((name, index) => {
+    if (!name || name.trim() === '') {
+      completed++;
+      if (completed === names.length && !hasError) {
+        res.json(assistants);
+      }
+      return;
+    }
+
+    const id = uuidv4();
+    db.run('INSERT INTO assistants (id, name) VALUES (?, ?)', 
+      [id, name.trim()], 
+      function(err) {
+        completed++;
+        if (err) {
+          hasError = true;
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        assistants.push({ id, name: name.trim() });
+        
+        if (completed === names.length && !hasError) {
+          res.json(assistants);
+        }
+      }
+    );
+  });
+});
+
 // Аудитории
 app.get('/api/rooms', (req, res) => {
   db.all('SELECT * FROM rooms', (err, rows) => {
@@ -347,6 +547,48 @@ app.delete('/api/rooms/:id', (req, res) => {
       return;
     }
     res.json({ message: 'Кабинет удален' });
+  });
+});
+
+app.post('/api/rooms/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const rooms = [];
+  let completed = 0;
+  let hasError = false;
+
+  names.forEach((name, index) => {
+    if (!name || name.trim() === '') {
+      completed++;
+      if (completed === names.length && !hasError) {
+        res.json(rooms);
+      }
+      return;
+    }
+
+    const id = uuidv4();
+    db.run('INSERT INTO rooms (id, name) VALUES (?, ?)', 
+      [id, name.trim()], 
+      function(err) {
+        completed++;
+        if (err) {
+          hasError = true;
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        rooms.push({ id, name: name.trim() });
+        
+        if (completed === names.length && !hasError) {
+          res.json(rooms);
+        }
+      }
+    );
   });
 });
 

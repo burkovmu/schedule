@@ -38,6 +38,7 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
     assistant_id: lesson.assistant_id || '',
     room_id: lesson.room_id,
     duration: lesson.duration,
+    color: lesson.color || lesson.subject_color || '#667eea',
     comment: lesson.comment || ''
   });
 
@@ -54,10 +55,7 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
 
     setLoading(true);
     try {
-      await updateLesson(lesson.id, {
-        ...formData,
-        color: subjects.find(s => s.id === formData.subject_id)?.color
-      });
+      await updateLesson(lesson.id, formData);
       
       onSuccess('Урок обновлен успешно');
       onClose();
@@ -89,10 +87,22 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
   };
 
   const handleInputChange = (field: string, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Если изменился предмет, обновляем цвет автоматически
+      if (field === 'subject_id') {
+        const selectedSubject = subjects.find(s => s.id === value);
+        if (selectedSubject) {
+          newData.color = selectedSubject.color;
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const selectedSubject = subjects.find(s => s.id === formData.subject_id);
@@ -248,18 +258,27 @@ const EditLessonForm: React.FC<EditLessonFormProps> = ({
             </div>
           </div>
 
-          {selectedSubject && (
-            <div className="form-row">
-              <div className="color-preview">
-                <span>Цвет урока:</span>
-                <div 
-                  className="color-sample"
-                  style={{ backgroundColor: selectedSubject.color }}
-                ></div>
-                <span>{selectedSubject.color}</span>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="color">Цвет урока</label>
+              <div className="color-input-group">
+                <input
+                  type="color"
+                  id="color"
+                  value={formData.color}
+                  onChange={(e) => handleInputChange('color', e.target.value)}
+                  className="color-picker"
+                />
+                <div className="color-preview">
+                  <div 
+                    className="color-sample"
+                    style={{ backgroundColor: formData.color }}
+                  ></div>
+                  <span className="color-value">{formData.color}</span>
+                </div>
               </div>
             </div>
-          )}
+          </div>
 
           <div className="form-actions">
             <button type="button" onClick={onClose} className="btn-secondary">

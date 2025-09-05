@@ -259,6 +259,26 @@ export const createSubject = async (subjectData: Partial<Subject>): Promise<Subj
   }
 };
 
+// Обновление предмета
+export const updateSubject = async (id: string, updates: Partial<Subject>): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/subjects/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка обновления предмета');
+    }
+  } catch (error) {
+    console.error('Ошибка обновления предмета:', error);
+    throw error;
+  }
+};
+
 // Удаление предмета
 export const deleteSubject = async (id: string): Promise<void> => {
   try {
@@ -363,6 +383,116 @@ export const deleteGroup = async (id: string): Promise<void> => {
     }
   } catch (error) {
     console.error('Ошибка удаления группы:', error);
+    throw error;
+  }
+};
+
+// Массовое создание преподавателей
+export const createTeachersBulk = async (names: string[]): Promise<Teacher[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/teachers/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ names }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка массового создания преподавателей');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка массового создания преподавателей:', error);
+    throw error;
+  }
+};
+
+// Массовое создание предметов
+export const createSubjectsBulk = async (names: string[]): Promise<Subject[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/subjects/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ names }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка массового создания предметов');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка массового создания предметов:', error);
+    throw error;
+  }
+};
+
+// Массовое создание аудиторий
+export const createRoomsBulk = async (names: string[]): Promise<Room[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/rooms/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ names }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка массового создания аудиторий');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка массового создания аудиторий:', error);
+    throw error;
+  }
+};
+
+// Массовое создание групп
+export const createGroupsBulk = async (names: string[]): Promise<Group[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/groups/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ names }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка массового создания групп');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка массового создания групп:', error);
+    throw error;
+  }
+};
+
+// Массовое создание ассистентов
+export const createAssistantsBulk = async (names: string[]): Promise<Assistant[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/assistants/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ names }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка массового создания ассистентов');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка массового создания ассистентов:', error);
     throw error;
   }
 };
