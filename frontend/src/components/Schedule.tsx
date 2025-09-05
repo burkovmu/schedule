@@ -29,19 +29,14 @@ interface ScheduleProps {
 
 // Кастомный алгоритм определения коллизий для точного выделения ячеек
 const createCustomCollisionDetection = (
-  setHoveredTimeSlot: (timeSlotId: string | null) => void,
-  setMousePosition: (position: { x: number; y: number } | null) => void
+  setHoveredTimeSlot: (timeSlotId: string | null) => void
 ): CollisionDetection => (args) => {
   const { droppableContainers, pointerCoordinates } = args;
   
   if (!pointerCoordinates) {
     setHoveredTimeSlot(null);
-    setMousePosition(null);
     return closestCenter(args);
   }
-
-  // Обновляем позицию мыши
-  setMousePosition({ x: pointerCoordinates.x, y: pointerCoordinates.y });
 
   // Находим все droppable элементы
   const droppableElements = Array.from(droppableContainers.values());
@@ -93,23 +88,18 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [hoveredTimeSlot, setHoveredTimeSlot] = useState<string | null>(null);
-  const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
 
-  // Мемоизированные функции для обновления состояния
+  // Мемоизированная функция для обновления состояния
   const updateHoveredTimeSlot = useCallback((timeSlotId: string | null) => {
     setHoveredTimeSlot(timeSlotId);
   }, []);
 
-  const updateMousePosition = useCallback((position: { x: number; y: number } | null) => {
-    setMousePosition(position);
-  }, []);
-
-  // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot и setMousePosition
+  // Создаем кастомный алгоритм коллизий с доступом к setHoveredTimeSlot
   const customCollisionDetection = useMemo(() => 
-    createCustomCollisionDetection(updateHoveredTimeSlot, updateMousePosition), 
-    [updateHoveredTimeSlot, updateMousePosition]
+    createCustomCollisionDetection(updateHoveredTimeSlot), 
+    [updateHoveredTimeSlot]
   );
 
   // Инициализация масштаба из localStorage или значение по умолчанию
@@ -212,7 +202,6 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     if (lesson) {
       setDraggedLesson(lesson);
       setHoveredTimeSlot(null); // Сбрасываем при начале перетаскивания
-      setMousePosition(null); // Сбрасываем позицию мыши
     }
   }, [lessonsWithPositions]);
 
@@ -221,7 +210,6 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     const { active, over } = event;
     setDraggedLesson(null);
     setHoveredTimeSlot(null); // Сбрасываем при завершении перетаскивания
-    setMousePosition(null); // Сбрасываем позицию мыши
     
     if (!over || !scheduleData) return;
     
@@ -613,26 +601,18 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
 
         <DragOverlay>
           {draggedLesson ? (
-            <>
-              <div className="lesson dragging">
-                <div className="lesson-title">{draggedLesson.subject_name}</div>
-                <div className="lesson-details">
-                  {draggedLesson.teacher_name} • {draggedLesson.room_name}
-                </div>
+            <div className="lesson dragging">
+              <div className="lesson-title">{draggedLesson.subject_name}</div>
+              <div className="lesson-details">
+                {draggedLesson.teacher_name} • {draggedLesson.room_name}
               </div>
-              {/* Подсказка с временем выбранной ячейки - позиционируется по координатам мыши */}
-              {hoveredTimeSlot && mousePosition && (
-                <div 
-                  className="drag-time-tooltip"
-                  style={{
-                    left: mousePosition.x,
-                    top: mousePosition.y - 50,
-                  }}
-                >
+              {/* Подсказка с временем выбранной ячейки - привязана к плашке урока */}
+              {hoveredTimeSlot && (
+                <div className="drag-time-tooltip">
                   {getTimeSlotTime(hoveredTimeSlot)}
                 </div>
               )}
-            </>
+            </div>
           ) : null}
         </DragOverlay>
         </DndContext>
