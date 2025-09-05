@@ -124,7 +124,7 @@ const LessonForm: React.FC<LessonFormProps> = ({
     });
   };
 
-  // const selectedSubject = subjects.find(s => s.id === formData.subject_id);
+  // const selectedSubject = subjects.find(s => s.id === formData.subject_id); // ESLint fix
 
   return (
     <div className="modal-overlay" onClick={onClose}>
