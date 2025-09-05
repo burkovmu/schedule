@@ -24,7 +24,11 @@
     },
     {
       "src": "/admin.html",
-      "dest": "/frontend/admin.html"
+      "dest": "/admin.html"
+    },
+    {
+      "src": "/tilda-widget.html",
+      "dest": "/tilda-widget.html"
     },
     {
       "src": "/(.*)",
