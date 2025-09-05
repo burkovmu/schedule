@@ -29,7 +29,7 @@ interface ScheduleProps {
 
 // Кастомный алгоритм определения коллизий для точного выделения ячеек
 const createCustomCollisionDetection = (setHoveredTimeSlot: (timeSlotId: string | null) => void): CollisionDetection => (args) => {
-  const { active, droppableContainers, pointerCoordinates } = args;
+  const { droppableContainers, pointerCoordinates } = args;
   
   if (!pointerCoordinates) {
     setHoveredTimeSlot(null);
