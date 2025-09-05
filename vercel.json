@@ -23,6 +23,10 @@
       "dest": "/frontend/embed.html"
     },
     {
+      "src": "/admin.html",
+      "dest": "/frontend/admin.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }

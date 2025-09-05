@@ -110,8 +110,9 @@ const TildaWidget: React.FC<TildaWidgetProps> = ({
       <ViewOnlySchedule 
         scheduleData={scheduleData}
         onLogin={() => {
-          // Для Tilda можно открыть в новом окне
-          window.open('/admin', '_blank');
+          // Для Tilda открываем админку в новом окне
+          const baseUrl = window.location.origin;
+          window.open(`${baseUrl}/admin.html`, '_blank');
         }}
       />
     </div>
