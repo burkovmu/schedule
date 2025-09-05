@@ -22,8 +22,9 @@ function AppContent() {
   const { isAuthenticated, logout } = useAuth();
 
   // Проверяем, находимся ли мы в режиме встраивания
+  const urlParams = new URLSearchParams(window.location.search);
   const isEmbedded = window.location.pathname === '/embed.html' || 
-                     window.location.search.includes('embed=true') ||
+                     urlParams.get('embed') === 'true' ||
                      window.parent !== window; // Проверка на iframe
 
   const removeNotification = useCallback((id: string) => {
