@@ -258,7 +258,8 @@ body {
     align-items: center;
     justify-content: center;
     gap: 16px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    white-space: nowrap;
   }
   
   .schedule-actions .zoom-controls {
@@ -269,6 +270,8 @@ body {
   
   .schedule-actions .login-btn {
     flex-shrink: 0;
+    white-space: nowrap;
+    min-width: fit-content;
   }
 }
 
