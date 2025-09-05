@@ -226,6 +226,48 @@ body {
   box-sizing: border-box;
 }
 
+/* Мобильная версия - три строки */
+@media (max-width: 768px) {
+  .schedule-info-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .schedule-title-row {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  .schedule-scroll-row {
+    text-align: center;
+  }
+  
+  .schedule-scroll-row .scroll-indicator {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .schedule-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .schedule-controls-row .zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .schedule-controls-row .login-btn {
+    flex-shrink: 0;
+  }
+}
+
 .schedule-actions {
   display: flex;
   align-items: center;
