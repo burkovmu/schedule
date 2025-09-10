@@ -374,6 +374,8 @@ body {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-top: none;
+  min-width: 0;
+  white-space: nowrap;
 }
 
 .schedule-wrapper::-webkit-scrollbar {
@@ -399,12 +401,16 @@ body {
   background: white;
   border-radius: 12px;
   overflow: hidden;
-  width: 100%;
-  min-width: 2900px;
+  width: 4190px !important;
+  min-width: 4190px !important;
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+  max-width: none;
 }
 
 /* Индикатор прокрутки */
@@ -446,16 +452,21 @@ body {
 
 .schedule-header {
   display: grid;
-  grid-template-columns: 200px repeat(108, 25px);
+  grid-template-columns: 200px repeat(114, 30px) !important;
   background: #f8f9fa;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  min-width: 2900px;
+  min-width: 3620px !important;
+  width: 3620px !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  box-sizing: border-box;
 }
 
 
 
 .schedule-header.lesson-headers {
-  grid-template-columns: 200px 25px 25px 25px 25px repeat(104, 25px);
+  grid-template-columns: 200px 30px 30px 30px 30px repeat(110, 30px) !important;
 }
 
 .lesson-headers {
@@ -493,10 +504,12 @@ body {
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   position: relative;
   background: #f8f9fa;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .time-header.first-row {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   min-height: 32px;
   color: #1d1d1f;
@@ -504,13 +517,19 @@ body {
   align-items: center;
   justify-content: center;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .time-header.second-row {
-  font-size: 0.5rem;
+  font-size: 0.55rem;
   min-height: 22px;
   opacity: 0.8;
   color: #6e6e73;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .time-header.second-row.hour-marker {
@@ -591,9 +610,12 @@ body {
 
 .group-name {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   margin-bottom: 8px;
   text-align: center;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .lesson-labels-in-group {
@@ -605,7 +627,7 @@ body {
 .lesson-labels-in-group .lesson-label {
   font-weight: 500;
   color: #495057;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-align: center;
   padding: 1px 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -613,6 +635,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .lesson-labels-in-group .lesson-label:last-child {
@@ -646,11 +671,16 @@ body {
 
 .schedule-row {
   display: grid;
-  grid-template-columns: 200px repeat(108, 25px);
-  min-width: 2900px;
+  grid-template-columns: 200px repeat(114, 30px) !important;
+  min-width: 3620px !important;
+  width: 3620px !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   position: relative;
   height: 150px;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  box-sizing: border-box;
 }
 
 .schedule-row:last-child {
@@ -677,6 +707,27 @@ body {
   border: 2px dashed rgba(0, 122, 255, 0.5);
 }
 
+.schedule-cell.paste-available {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+  border-color: #ff9500;
+  position: relative;
+}
+
+.schedule-cell.paste-available:hover {
+  background: linear-gradient(135deg, #ffe0b2 0%, rgba(0, 122, 255, 0.05) 100%);
+  border-color: #ff9500;
+  border-width: 2px;
+}
+
+.schedule-cell.paste-available::after {
+  content: "📋";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
 .schedule-cell:last-child {
   border-right: none;
 }
@@ -686,7 +737,7 @@ body {
   border-radius: 2px;
   padding: 0;
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   cursor: move;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -702,6 +753,10 @@ body {
   right: 0;
   bottom: 0;
   border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Улучшение четкости шрифта */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* Оптимизация для GPU ускорения */
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -730,26 +785,32 @@ body {
 
 .lesson-time {
   font-weight: 600;
-  font-size: 0.9rem;
-  line-height: 1.1;
-  padding: 1px 0;
-  min-height: 16px;
+  font-size: 1rem;
+  line-height: 1.2;
+  padding: 2px 0;
+  min-height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .lesson-data-row {
   font-weight: 500;
-  font-size: 0.7rem;
-  line-height: 1.1;
-  padding: 1px 0;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  padding: 2px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  min-height: 16px;
+  min-height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .lesson-data-row:last-child {
@@ -798,6 +859,12 @@ body {
   background: rgba(0, 122, 255, 0.9);
   color: white;
   border-color: rgba(0, 122, 255, 0.3);
+}
+
+.copy-btn:hover {
+  background: rgba(255, 149, 0, 0.9);
+  color: white;
+  border-color: rgba(255, 149, 0, 0.3);
 }
 
 .delete-btn:hover {
@@ -894,6 +961,7 @@ body {
 
 .lesson-title {
   font-weight: 600;
+  font-size: 0.9rem;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
@@ -901,7 +969,7 @@ body {
 }
 
 .lesson-details {
-  font-size: 10px;
+  font-size: 11px;
   opacity: 0.9;
   white-space: nowrap;
   overflow: hidden;
@@ -1102,6 +1170,10 @@ body {
   border-left: 4px solid #ff3b30;
 }
 
+.notification.info {
+  border-left: 4px solid #007aff;
+}
+
 .notification.warning {
   border-left: 4px solid #ff9500;
 }
@@ -1150,13 +1222,13 @@ body {
   .schedule-header,
   .schedule-row {
     grid-template-columns: 150px repeat(108, 25px);
-    min-width: 2900px;
+    min-width: 4190px;
   }
   
 
   
   .schedule-container {
-    min-width: 2900px;
+    min-width: 4190px;
   }
   
   .time-header.first-row {
@@ -1167,14 +1239,14 @@ body {
 @media (min-width: 768px) and (max-width: 1199px) {
   .schedule-header,
   .schedule-row {
-    grid-template-columns: 120px repeat(108, 20px);
-    min-width: 2280px;
+    grid-template-columns: 200px repeat(114, 30px) !important;
+    min-width: 4190px;
   }
   
 
   
   .schedule-container {
-    min-width: 2280px;
+    min-width: 4190px;
   }
   
   .time-header.first-row {
@@ -1185,14 +1257,14 @@ body {
 @media (max-width: 767px) {
   .schedule-header,
   .schedule-row {
-    grid-template-columns: 100px repeat(108, 15px);
-    min-width: 1720px;
+    grid-template-columns: 200px repeat(114, 30px) !important;
+    min-width: 4190px;
   }
   
 
   
   .schedule-container {
-    min-width: 1720px;
+    min-width: 4190px;
   }
   
   .app-main {
@@ -1254,12 +1326,12 @@ body {
   }
   
   .lesson {
-    font-size: 8px;
+    font-size: 9px;
     padding: 4px;
   }
   
   .lesson-value {
-    font-size: 7px;
+    font-size: 8px;
   }
   
   .schedule-wrapper {
@@ -1307,7 +1379,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 9999;
   backdrop-filter: blur(4px);
 }
 
@@ -1326,9 +1398,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 24px 0 24px;
+  padding: 32px 32px 24px 32px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
+  margin-bottom: 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
@@ -1427,24 +1501,27 @@ body {
 
 .form-actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: flex-end;
   margin-top: 32px;
-  padding-top: 24px;
+  padding: 24px 32px 32px 32px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  flex-shrink: 0;
 }
 
 .btn-primary,
 .btn-secondary,
 .btn-danger {
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
   outline: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary {
@@ -1454,7 +1531,8 @@ body {
 
 .btn-primary:hover:not(:disabled) {
   background: #0056cc;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
 }
 
 .btn-primary:disabled {
@@ -2112,31 +2190,82 @@ body {
 .conflict-dialog {
   max-width: 700px;
   width: 95%;
+  max-height: 85vh;
+  z-index: 10000;
+  position: relative;
+  margin: 20px;
+  border-radius: 20px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Специальный z-index для модального окна конфликтов */
+.modal-overlay.conflict-modal {
+  z-index: 10001;
 }
 
 .conflict-content {
-  padding: 0 24px 24px 24px;
+  padding: 0 32px 32px 32px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(85vh - 200px);
+}
+
+/* Стили для скроллбара в модальном окне конфликтов */
+.conflict-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.conflict-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+.conflict-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.conflict-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .conflict-intro {
   font-size: 16px;
   color: #1d1d1f;
-  margin-bottom: 24px;
-  line-height: 1.5;
+  margin-bottom: 28px;
+  line-height: 1.6;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  border-left: 4px solid #007aff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .conflicts-list {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  padding: 0 8px;
 }
 
 .conflict-item {
   display: flex;
-  gap: 16px;
-  padding: 16px;
-  background: #f5f5f7;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  border-left: 4px solid #ff3b30;
+  gap: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  border-left: 5px solid #ff3b30;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.conflict-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .conflict-icon {
@@ -2151,50 +2280,63 @@ body {
 
 .conflict-type {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   color: #1d1d1f;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .conflict-message {
   font-size: 14px;
   color: #1d1d1f;
-  margin-bottom: 8px;
-  line-height: 1.4;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: rgba(255, 59, 48, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #ff3b30;
 }
 
 .conflict-lesson-info {
-  font-size: 12px;
-  color: #8e8e93;
-  background: rgba(0, 0, 0, 0.05);
-  padding: 8px 12px;
-  border-radius: 6px;
+  font-size: 13px;
+  color: #6e6e73;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  margin-top: 8px;
 }
 
 .conflict-suggestions {
-  background: #e8f4fd;
-  border-radius: 12px;
-  padding: 16px;
-  border-left: 4px solid #007aff;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+  border-radius: 16px;
+  padding: 24px;
+  border-left: 5px solid #007aff;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+  margin-top: 8px;
 }
 
 .conflict-suggestions h3 {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: #1d1d1f;
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(0, 122, 255, 0.2);
 }
 
 .conflict-suggestions ul {
   margin: 0;
-  padding-left: 20px;
+  padding-left: 24px;
 }
 
 .conflict-suggestions li {
   font-size: 14px;
   color: #1d1d1f;
-  margin-bottom: 6px;
-  line-height: 1.4;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  padding: 4px 0;
 }
 
 /* Responsive reference manager */
@@ -2438,12 +2580,78 @@ body {
   
   .conflict-dialog {
     width: 95%;
-    margin: 20px;
+    margin: 10px;
+    max-height: 90vh;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
   }
   
   .conflict-item {
     flex-direction: column;
     gap: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .conflict-content {
+    padding: 0 20px 20px 20px;
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(90vh - 180px);
+  }
+  
+  .modal-header {
+    padding: 20px 20px 16px 20px;
+    flex-shrink: 0;
+  }
+  
+  .form-actions {
+    padding: 16px 20px 20px 20px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  
+  .conflict-intro {
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  
+  .conflicts-list {
+    padding: 0 4px;
+    margin-bottom: 24px;
+  }
+  
+  .conflict-item {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .conflict-message {
+    padding: 6px 10px;
+    margin-bottom: 10px;
+  }
+  
+  .conflict-lesson-info {
+    padding: 10px 12px;
+  }
+  
+  .conflict-suggestions {
+    padding: 20px;
+  }
+  
+  .conflict-suggestions h3 {
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+  }
+  
+  .conflict-suggestions ul {
+    padding-left: 20px;
+  }
+  
+  .conflict-suggestions li {
+    margin-bottom: 8px;
+    padding: 2px 0;
   }
   
   .conflict-icon {
@@ -2572,6 +2780,360 @@ body {
 .form-group.full-width {
   width: 100%;
   grid-column: 1 / -1;
+}
+
+/* Group assistant info */
+.group-assistant-info {
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background-color: #f0f8ff;
+  border: 1px solid #e1f5fe;
+  border-radius: 6px;
+}
+
+.group-assistant-label {
+  color: #1976d2;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.group-assistant-label strong {
+  color: #0d47a1;
+}
+
+/* Group assistant column in table */
+.group-assistant {
+  text-align: left;
+  padding: 12px 16px;
+}
+
+.assistant-text {
+  font-size: 0.875rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Стили для дополнительных преподавателей и ассистентов */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e5ea;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  font-size: 14px;
+}
+
+.checkbox-item:hover {
+  background-color: rgba(0, 122, 255, 0.05);
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #007aff;
+}
+
+.teacher-name {
+  font-weight: 500;
+}
+
+.assistant-name {
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+/* Стили для отображения персонала в уроках */
+.staff-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.main-staff {
+  font-weight: 500;
+}
+
+.additional-staff-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.additional-staff-item {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: 400;
+}
+
+/* Стили для индикаторов дополнительного персонала */
+.additional-staff {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.additional-staff.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.additional-staff.clickable:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Стили для всплывающих подсказок */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.tooltip-content {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-content strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tooltip-content div {
+  margin: 2px 0;
+  padding: 1px 0;
+}
+
+/* Стрелка для tooltip */
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Стили для полной ширины в формах */
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .checkbox-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .checkbox-item {
+    padding: 6px 8px;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Стили для индикаторов конфликтов */
+.conflict-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 0.8rem;
+  background: rgba(255, 59, 48, 0.9);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.conflict-indicator:hover {
+  background: rgba(255, 59, 48, 1);
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Стили для уроков с конфликтами */
+.lesson-time {
+  position: relative;
+}
+
+
+/* Стили для tooltip конфликтов */
+.conflict-tooltip {
+  position: fixed;
+  z-index: 10002;
+  pointer-events: auto;
+  min-width: 240px;
+  max-width: 300px;
+  width: auto;
+}
+
+/* Позиционирование tooltip'ов задается через inline стили */
+
+.conflict-tooltip .tooltip-content {
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  line-height: 1.3;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: fit-content;
+  min-width: 100%;
+}
+
+.conflict-tooltip .tooltip-content strong {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.7rem;
+  margin: 0;
+  text-align: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-tooltip-item {
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  border-left: 2px solid #ff3b30;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.conflict-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.conflict-tooltip-icon {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+}
+
+.conflict-tooltip-type {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.65rem;
+  margin: 0;
+}
+
+.conflict-tooltip-message {
+  color: #e0e0e0;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.conflict-tooltip-lesson {
+  font-size: 0.55rem;
+  color: #b0b0b0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 6px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+  padding-left: 20px;
+}
+
+.conflict-tooltip-lesson strong {
+  color: #fff;
+  font-weight: 500;
+  margin: 0;
+  display: inline;
+  font-size: 0.55rem;
+}
+
+/* Стрелка для tooltip конфликтов справа */
+.conflict-tooltip-right::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: rgba(0, 0, 0, 0.95);
+}
+
+/* Стрелка для tooltip конфликтов слева */
+.conflict-tooltip-left::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -6px;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: rgba(0, 0, 0, 0.95);
 }
 
 

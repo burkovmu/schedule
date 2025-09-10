@@ -5,8 +5,10 @@ CREATE TABLE IF NOT EXISTS groups (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     display_order INTEGER DEFAULT 0,
+    assistant_id TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    FOREIGN KEY (assistant_id) REFERENCES assistants (id) ON DELETE SET NULL
 );
 
 -- Таблица предметов

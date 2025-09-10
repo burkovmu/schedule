@@ -5,15 +5,16 @@ export const generateTimeSlots = (): TimeSlot[] => {
   const timeSlots: TimeSlot[] = [];
   let slotId = 1;
 
-  for (let hour = 9; hour < 18; hour++) {
-    for (let minute = 0; minute < 60; minute += 5) {
+  for (let hour = 8; hour < 18; hour++) {
+    const startMinute = hour === 8 ? 30 : 0;
+    for (let minute = startMinute; minute < 60; minute += 5) {
       const startHour = hour;
       const startMinute = minute;
       const endMinute = minute + 5;
       const endHour = endMinute >= 60 ? hour + 1 : hour;
       const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
       
-      if (endHour > 18 || (endHour === 18 && finalEndMinute > 0)) {
+      if (endHour > 18) {
         break;
       }
       
@@ -68,7 +69,7 @@ export const validateLesson = (lesson: Lesson, allLessons: Lesson[]): ConflictIn
     if (existingLesson.room_id === lesson.room_id) {
       conflicts.push({
         type: 'room',
-        message: `Аудитория ${existingLesson.room_name} уже занята уроком "${existingLesson.subject_name}" в группе ${existingLesson.group_name}`,
+        message: `Аудитория ${existingLesson.room_name || 'Неизвестная аудитория'} уже занята уроком "${existingLesson.subject_name || 'Неизвестный предмет'}" в группе ${existingLesson.group_name || 'Неизвестная группа'}`,
         conflictingLesson: existingLesson
       });
     }
@@ -77,8 +78,57 @@ export const validateLesson = (lesson: Lesson, allLessons: Lesson[]): ConflictIn
     if (existingLesson.group_id === lesson.group_id) {
       conflicts.push({
         type: 'group',
-        message: `Группа ${existingLesson.group_name} уже имеет урок "${existingLesson.subject_name}" в это время`,
+        message: `Группа ${existingLesson.group_name || 'Неизвестная группа'} уже имеет урок "${existingLesson.subject_name || 'Неизвестный предмет'}" в это время`,
         conflictingLesson: existingLesson
+      });
+    }
+    
+    // Проверяем конфликты по основному преподавателю
+    if (existingLesson.teacher_id === lesson.teacher_id) {
+      conflicts.push({
+        type: 'teacher',
+        message: `Преподаватель ${existingLesson.teacher_name || 'Неизвестный преподаватель'} уже ведет урок "${existingLesson.subject_name || 'Неизвестный предмет'}" в группе ${existingLesson.group_name || 'Неизвестная группа'}`,
+        conflictingLesson: existingLesson
+      });
+    }
+    
+    // Проверяем конфликты по дополнительным преподавателям
+    if (lesson.additional_teachers && lesson.additional_teachers.length > 0) {
+      lesson.additional_teachers.filter(teacher => teacher).forEach(additionalTeacher => {
+        // Проверяем конфликт с основным преподавателем существующего урока
+        if (existingLesson.teacher_id === additionalTeacher.id) {
+          conflicts.push({
+            type: 'teacher',
+            message: `Преподаватель ${additionalTeacher?.name || 'Неизвестный преподаватель'} уже ведет урок "${existingLesson.subject_name || 'Неизвестный предмет'}" в группе ${existingLesson.group_name || 'Неизвестная группа'}`,
+            conflictingLesson: existingLesson
+          });
+        }
+        
+        // Проверяем конфликт с дополнительными преподавателями существующего урока
+        if (existingLesson.additional_teachers && existingLesson.additional_teachers.length > 0) {
+          existingLesson.additional_teachers.filter(teacher => teacher).forEach(existingAdditionalTeacher => {
+            if (existingAdditionalTeacher.id === additionalTeacher.id) {
+              conflicts.push({
+                type: 'teacher',
+                message: `Преподаватель ${additionalTeacher?.name || 'Неизвестный преподаватель'} уже участвует в уроке "${existingLesson.subject_name || 'Неизвестный предмет'}" в группе ${existingLesson.group_name || 'Неизвестная группа'}`,
+                conflictingLesson: existingLesson
+              });
+            }
+          });
+        }
+      });
+    }
+    
+    // Проверяем конфликты дополнительных преподавателей существующего урока с основным преподавателем нового урока
+    if (existingLesson.additional_teachers && existingLesson.additional_teachers.length > 0) {
+      existingLesson.additional_teachers.filter(teacher => teacher).forEach(existingAdditionalTeacher => {
+        if (existingAdditionalTeacher.id === lesson.teacher_id) {
+          conflicts.push({
+            type: 'teacher',
+            message: `Преподаватель ${lesson.teacher_name || 'Неизвестный преподаватель'} уже участвует в уроке "${existingLesson.subject_name || 'Неизвестный предмет'}" в группе ${existingLesson.group_name || 'Неизвестная группа'}`,
+            conflictingLesson: existingLesson
+          });
+        }
       });
     }
   });
@@ -182,4 +232,32 @@ export const isRoomAvailable = (
 ): boolean => {
   const availableRooms = findAvailableRooms(timeSlotId, duration, allLessons, [{ id: roomId, name: '' }], timeSlots);
   return availableRooms.length > 0;
+};
+
+// Получение всех конфликтующих уроков в расписании
+export const getAllConflictingLessons = (allLessons: Lesson[]): Map<string, ConflictInfo[]> => {
+  const conflictMap = new Map<string, ConflictInfo[]>();
+  
+  allLessons.forEach(lesson => {
+    const conflicts = validateLesson(lesson, allLessons);
+    if (conflicts.length > 0) {
+      conflictMap.set(lesson.id, conflicts);
+    }
+  });
+  
+  return conflictMap;
+};
+
+// Проверка, есть ли у урока конфликты
+export const hasConflicts = (lessonId: string, conflictMap: Map<string, ConflictInfo[]>): boolean => {
+  return conflictMap.has(lessonId);
+};
+
+// Получение типов конфликтов для урока
+export const getLessonConflictTypes = (lessonId: string, conflictMap: Map<string, ConflictInfo[]>): string[] => {
+  const conflicts = conflictMap.get(lessonId);
+  if (!conflicts) return [];
+  
+  const types = new Set(conflicts.map(conflict => conflict.type));
+  return Array.from(types);
 };

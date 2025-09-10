@@ -7,6 +7,7 @@ import NotificationSystem from './components/NotificationSystem';
 import LoginForm from './components/LoginForm';
 import TildaWidget from './components/TildaWidget';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { CopyPasteProvider } from './contexts/CopyPasteContext';
 import { Notification, ScheduleData } from './types';
 import { fetchScheduleData } from './utils/api';
 
@@ -60,6 +61,19 @@ function AppContent() {
     }
   }, [addNotification]);
 
+  // Оптимизированная загрузка данных без показа индикатора загрузки
+  const refreshScheduleData = useCallback(async () => {
+    try {
+      const data = await fetchScheduleData();
+      setScheduleData(data);
+    } catch (error) {
+      addNotification({
+        type: 'error',
+        message: 'Ошибка обновления данных расписания'
+      });
+    }
+  }, [addNotification]);
+
   // Загрузка данных при монтировании компонента
   useEffect(() => {
     loadScheduleData();
@@ -98,7 +112,7 @@ function AppContent() {
           <Schedule 
             scheduleData={scheduleData}
             onNotification={addNotification}
-            onRefresh={loadScheduleData}
+            onRefresh={refreshScheduleData}
           />
         );
       
@@ -108,7 +122,7 @@ function AppContent() {
             type="teachers"
             title="Преподаватели"
             items={scheduleData.teachers}
-            onRefresh={loadScheduleData}
+            onRefresh={refreshScheduleData}
             onNotification={addNotification}
           />
         );
@@ -119,7 +133,7 @@ function AppContent() {
             type="subjects"
             title="Предметы"
             items={scheduleData.subjects}
-            onRefresh={loadScheduleData}
+            onRefresh={refreshScheduleData}
             onNotification={addNotification}
           />
         );
@@ -130,7 +144,7 @@ function AppContent() {
             type="rooms"
             title="Аудитории"
             items={scheduleData.rooms}
-            onRefresh={loadScheduleData}
+            onRefresh={refreshScheduleData}
             onNotification={addNotification}
           />
         );
@@ -141,7 +155,8 @@ function AppContent() {
             type="groups"
             title="Группы"
             items={scheduleData.groups}
-            onRefresh={loadScheduleData}
+            assistants={scheduleData.assistants}
+            onRefresh={refreshScheduleData}
             onNotification={addNotification}
           />
         );
@@ -152,7 +167,7 @@ function AppContent() {
             type="assistants"
             title="Ассистенты"
             items={scheduleData.assistants}
-            onRefresh={loadScheduleData}
+            onRefresh={refreshScheduleData}
             onNotification={addNotification}
           />
         );
@@ -232,7 +247,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <CopyPasteProvider>
+        <AppContent />
+      </CopyPasteProvider>
     </AuthProvider>
   );
 }

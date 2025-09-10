@@ -62,15 +62,16 @@ const generateTimeSlots = () => {
   const timeSlots = [];
   let slotId = 1;
 
-  for (let hour = 9; hour < 18; hour++) {
-    for (let minute = 0; minute < 60; minute += 5) {
+  for (let hour = 8; hour < 18; hour++) {
+    const startMinute = hour === 8 ? 30 : 0;
+    for (let minute = startMinute; minute < 60; minute += 5) {
       const startHour = hour;
       const startMinute = minute;
       const endMinute = minute + 5;
       const endHour = endMinute >= 60 ? hour + 1 : hour;
       const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
       
-      if (endHour > 18 || (endHour === 18 && finalEndMinute > 0)) {
+      if (endHour > 18) {
         break;
       }
       
@@ -168,10 +169,45 @@ app.post('/api/assistants', (req, res) => {
   res.json(newAssistant);
 });
 
+app.put('/api/assistants/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const assistantIndex = dataStore.assistants.findIndex(a => a.id === id);
+  if (assistantIndex === -1) {
+    return res.status(404).json({ error: 'Ассистент не найден' });
+  }
+  
+  // Обновляем ассистента
+  dataStore.assistants[assistantIndex] = {
+    ...dataStore.assistants[assistantIndex],
+    ...updates
+  };
+  
+  res.json(dataStore.assistants[assistantIndex]);
+});
+
 app.delete('/api/assistants/:id', (req, res) => {
   const { id } = req.params;
   dataStore.assistants = dataStore.assistants.filter(a => a.id !== id);
   res.json({ message: 'Ассистент удален' });
+});
+
+app.post('/api/assistants/bulk', (req, res) => {
+  const { names } = req.body;
+  
+  if (!Array.isArray(names) || names.length === 0) {
+    res.status(400).json({ error: 'Список имен не может быть пустым' });
+    return;
+  }
+
+  const assistants = names.map(name => {
+    const id = uuidv4();
+    return { id, name };
+  });
+
+  dataStore.assistants.push(...assistants);
+  res.json(assistants);
 });
 
 // Аудитории
@@ -202,14 +238,38 @@ app.get('/api/lessons', (req, res) => {
     const assistant = dataStore.assistants.find(a => a.id === lesson.assistant_id);
     const room = dataStore.rooms.find(r => r.id === lesson.room_id);
     
+    // Обрабатываем дополнительные преподаватели
+    const additionalTeachers = lesson.additional_teachers ? 
+      lesson.additional_teachers.map(teacherId => {
+        const additionalTeacher = dataStore.teachers.find(t => t.id === teacherId);
+        return additionalTeacher ? {
+          id: additionalTeacher.id,
+          name: additionalTeacher.name,
+          color: additionalTeacher.color
+        } : null;
+      }).filter(teacher => teacher) : [];
+    
+    // Обрабатываем дополнительные ассистенты
+    const additionalAssistants = lesson.additional_assistants ? 
+      lesson.additional_assistants.map(assistantId => {
+        const additionalAssistant = dataStore.assistants.find(a => a.id === assistantId);
+        return additionalAssistant ? {
+          id: additionalAssistant.id,
+          name: additionalAssistant.name
+        } : null;
+      }).filter(assistant => assistant) : [];
+    
     return {
       ...lesson,
       group_name: group?.name,
       subject_name: subject?.name,
       subject_color: subject?.color,
       teacher_name: teacher?.name,
+      teacher_color: teacher?.color,
       assistant_name: assistant?.name,
-      room_name: room?.name
+      room_name: room?.name,
+      additional_teachers: additionalTeachers,
+      additional_assistants: additionalAssistants
     };
   });
   
@@ -217,7 +277,7 @@ app.get('/api/lessons', (req, res) => {
 });
 
 app.post('/api/lessons', (req, res) => {
-  const { group_id, time_slot, subject_id, teacher_id, assistant_id, room_id, duration, color, comment } = req.body;
+  const { group_id, time_slot, subject_id, teacher_id, assistant_id, room_id, duration, color, comment, additional_teachers, additional_assistants } = req.body;
   const id = uuidv4();
   const newLesson = {
     id,
@@ -229,7 +289,9 @@ app.post('/api/lessons', (req, res) => {
     room_id,
     duration: duration || 45,
     color,
-    comment
+    comment,
+    additional_teachers: additional_teachers || [],
+    additional_assistants: additional_assistants || []
   };
   dataStore.lessons.push(newLesson);
   res.json(newLesson);

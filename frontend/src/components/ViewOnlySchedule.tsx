@@ -168,19 +168,20 @@ const ViewOnlySchedule: React.FC<ViewOnlyScheduleProps> = ({ scheduleData, onLog
           {/* Вторая строка заголовка */}
           <div className="schedule-header">
             <div className="group-header-empty"></div>
-            {timeSlots.map((slot, index) => {
-              const isHourStart = index % 12 === 0;
-              const minute = parseInt(slot.startTime.split(':')[1]);
-              
-              return (
-                <div 
-                  key={`second-${slot.id}`} 
-                  className={`time-header second-row ${isHourStart ? 'hour-marker' : ''}`}
-                >
-                  {isHourStart ? slot.startTime.split(':')[0] : minute.toString()}
-                </div>
-              );
-            })}
+          {timeSlots.map((slot, index) => {
+            // Определяем начало часа: первый слот (8:30) или каждый 12-й слот после 6-го
+            const isHourStart = index === 0 || (index >= 6 && (index - 6) % 12 === 0);
+            const minute = parseInt(slot.startTime.split(':')[1]);
+            
+            return (
+              <div 
+                key={`second-${slot.id}`} 
+                className={`time-header second-row ${isHourStart ? 'hour-marker' : ''}`}
+              >
+                {isHourStart ? slot.startTime.split(':')[0] : minute.toString()}
+              </div>
+            );
+          })}
           </div>
 
           {/* Строки расписания */}

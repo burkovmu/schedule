@@ -9,6 +9,8 @@ export interface Group {
   id: string;
   name: string;
   display_order: number;
+  assistant_id?: string;
+  assistant_name?: string;
 }
 
 export interface Subject {
@@ -20,6 +22,7 @@ export interface Subject {
 export interface Teacher {
   id: string;
   name: string;
+  color: string;
 }
 
 export interface Assistant {
@@ -48,8 +51,19 @@ export interface Lesson {
   subject_name?: string;
   subject_color?: string;
   teacher_name?: string;
+  teacher_color?: string;
   assistant_name?: string;
   room_name?: string;
+  // Множественные преподаватели и ассистенты
+  additional_teachers?: Array<{
+    id: string;
+    name: string;
+    color: string;
+  }>;
+  additional_assistants?: Array<{
+    id: string;
+    name: string;
+  }>;
   // Вычисляемые поля
   startSlotIndex?: number;
   span?: number;
@@ -58,7 +72,7 @@ export interface Lesson {
 
 export interface Notification {
   id: string;
-  type: 'success' | 'error' | 'warning';
+  type: 'success' | 'error' | 'warning' | 'info';
   message: string;
 }
 

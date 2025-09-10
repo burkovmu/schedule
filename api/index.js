@@ -137,13 +137,30 @@ app.get('/api/groups', async (req, res) => {
     if (useSupabase) {
       const { data, error } = await supabase
         .from('groups')
-        .select('*')
+        .select(`
+          *,
+          assistants(name)
+        `)
         .order('display_order');
       
       if (error) throw error;
-      res.json(data);
+      
+      const formattedData = data.map(group => ({
+        ...group,
+        assistant_name: group.assistants?.name
+      }));
+      
+      res.json(formattedData);
     } else {
-      res.json(dataStore.groups.sort((a, b) => a.display_order - b.display_order));
+      const groupsWithAssistants = dataStore.groups.map(group => {
+        const assistant = dataStore.assistants.find(a => a.id === group.assistant_id);
+        return {
+          ...group,
+          assistant_name: assistant?.name
+        };
+      });
+      
+      res.json(groupsWithAssistants.sort((a, b) => a.display_order - b.display_order));
     }
   } catch (error) {
     console.error('Ошибка получения групп:', error);
@@ -153,25 +170,94 @@ app.get('/api/groups', async (req, res) => {
 
 app.post('/api/groups', async (req, res) => {
   try {
-    const { name, display_order } = req.body;
+    const { name, display_order, assistant_id } = req.body;
     const id = uuidv4();
+    
+    // Обрабатываем assistant_id - если пустая строка, устанавливаем null
+    const processedAssistantId = assistant_id === '' ? null : assistant_id;
     
     if (useSupabase) {
       const { data, error } = await supabase
         .from('groups')
-        .insert([{ id, name, display_order: display_order || 0 }])
-        .select()
+        .insert([{ id, name, display_order: display_order || 0, assistant_id: processedAssistantId }])
+        .select(`
+          *,
+          assistants(name)
+        `)
         .single();
       
       if (error) throw error;
-      res.json(data);
+      
+      const formattedData = {
+        ...data,
+        assistant_name: data.assistants?.name
+      };
+      
+      res.json(formattedData);
     } else {
-      const newGroup = { id, name, display_order: display_order || 0 };
+      const newGroup = { id, name, display_order: display_order || 0, assistant_id: processedAssistantId };
       dataStore.groups.push(newGroup);
-      res.json(newGroup);
+      
+      const assistant = dataStore.assistants.find(a => a.id === newGroup.assistant_id);
+      
+      res.json({
+        ...newGroup,
+        assistant_name: assistant?.name
+      });
     }
   } catch (error) {
     console.error('Ошибка создания группы:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/groups/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Обрабатываем assistant_id - если пустая строка, устанавливаем null
+    if (updates.assistant_id === '') {
+      updates.assistant_id = null;
+    }
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('groups')
+        .update(updates)
+        .eq('id', id)
+        .select(`
+          *,
+          assistants(name)
+        `)
+        .single();
+      
+      if (error) throw error;
+      
+      const formattedData = {
+        ...data,
+        assistant_name: data.assistants?.name
+      };
+      
+      res.json(formattedData);
+    } else {
+      const groupIndex = dataStore.groups.findIndex(g => g.id === id);
+      if (groupIndex === -1) {
+        return res.status(404).json({ error: 'Группа не найдена' });
+      }
+      
+      dataStore.groups[groupIndex] = { ...dataStore.groups[groupIndex], ...updates };
+      
+      const updatedGroup = dataStore.groups[groupIndex];
+      const assistant = dataStore.assistants.find(a => a.id === updatedGroup.assistant_id);
+      
+      res.json({
+        ...updatedGroup,
+        assistant_name: assistant?.name
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка обновления группы:', error);
     res.status(500).json({ error: error.message });
   }
 });

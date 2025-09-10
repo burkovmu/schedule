@@ -11,13 +11,19 @@
     "build": "cd frontend && npm run build",
     "start": "cd backend && npm start"
   },
-  "keywords": ["schedule", "react", "nodejs", "sqlite"],
+  "keywords": [
+    "schedule",
+    "react",
+    "nodejs",
+    "sqlite"
+  ],
   "author": "Mike",
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
-    "express": "^4.18.2",
     "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.7",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

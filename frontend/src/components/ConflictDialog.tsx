@@ -27,7 +27,7 @@ const ConflictDialog: React.FC<ConflictDialogProps> = ({ conflicts, onClose, onC
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay conflict-modal" onClick={onClose}>
       <div className="modal-content conflict-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>⚠️ Обнаружены конфликты в расписании</h2>
@@ -36,7 +36,7 @@ const ConflictDialog: React.FC<ConflictDialogProps> = ({ conflicts, onClose, onC
         
         <div className="conflict-content">
           <p className="conflict-intro">
-            Невозможно создать/переместить урок из-за следующих конфликтов:
+            Обнаружены следующие конфликты в расписании:
           </p>
           
           <div className="conflicts-list">

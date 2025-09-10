@@ -1,5 +1,34 @@
 import { ScheduleData, Lesson, Group, TimeSlot, Teacher, Subject, Room, Assistant } from '../types';
 
+// Типы для API запросов
+export interface CreateLessonData {
+  group_id: string;
+  time_slot: string;
+  subject_id: string;
+  teacher_id: string;
+  assistant_id?: string;
+  room_id: string;
+  duration: number;
+  color?: string;
+  comment?: string;
+  additional_teachers?: string[];
+  additional_assistants?: string[];
+}
+
+export interface UpdateLessonData {
+  group_id?: string;
+  time_slot?: string;
+  subject_id?: string;
+  teacher_id?: string;
+  assistant_id?: string;
+  room_id?: string;
+  duration?: number;
+  color?: string;
+  comment?: string;
+  additional_teachers?: string[];
+  additional_assistants?: string[];
+}
+
 // Автоматическое определение API URL для локальной разработки и продакшена
 const getApiBaseUrl = () => {
   // Если задана переменная окружения, используем её
@@ -87,6 +116,7 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
       timeSlots: timeSlots.length
     });
     
+    
     return {
       groups,
       lessons,
@@ -106,7 +136,7 @@ export const fetchScheduleData = async (): Promise<ScheduleData> => {
 };
 
 // Создание урока
-export const createLesson = async (lessonData: Partial<Lesson>): Promise<Lesson> => {
+export const createLesson = async (lessonData: CreateLessonData): Promise<Lesson> => {
   try {
     const response = await fetch(`${API_BASE_URL}/lessons`, {
       method: 'POST',
@@ -128,7 +158,7 @@ export const createLesson = async (lessonData: Partial<Lesson>): Promise<Lesson>
 };
 
 // Обновление урока
-export const updateLesson = async (id: string, updates: Partial<Lesson>): Promise<void> => {
+export const updateLesson = async (id: string, updates: UpdateLessonData): Promise<void> => {
   try {
     const response = await fetch(`${API_BASE_URL}/lessons/${id}`, {
       method: 'PUT',
@@ -217,6 +247,26 @@ export const createTeacher = async (teacherData: Partial<Teacher>): Promise<Teac
     return await response.json();
   } catch (error) {
     console.error('Ошибка создания преподавателя:', error);
+    throw error;
+  }
+};
+
+// Обновление преподавателя
+export const updateTeacher = async (id: string, updates: Partial<Teacher>): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/teachers/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка обновления преподавателя');
+    }
+  } catch (error) {
+    console.error('Ошибка обновления преподавателя:', error);
     throw error;
   }
 };
@@ -355,6 +405,26 @@ export const createAssistant = async (assistantData: Partial<Assistant>): Promis
   }
 };
 
+// Обновление ассистента
+export const updateAssistant = async (id: string, updates: Partial<Assistant>): Promise<void> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/assistants/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка обновления ассистента');
+    }
+  } catch (error) {
+    console.error('Ошибка обновления ассистента:', error);
+    throw error;
+  }
+};
+
 // Удаление ассистента
 export const deleteAssistant = async (id: string): Promise<void> => {
   try {
@@ -367,6 +437,28 @@ export const deleteAssistant = async (id: string): Promise<void> => {
     }
   } catch (error) {
     console.error('Ошибка удаления ассистента:', error);
+    throw error;
+  }
+};
+
+// Обновление группы
+export const updateGroup = async (id: string, groupData: Partial<Group>): Promise<Group> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(groupData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Ошибка обновления группы');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка обновления группы:', error);
     throw error;
   }
 };

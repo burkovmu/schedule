@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -12,9 +12,10 @@ import {
   CollisionDetection
 } from '@dnd-kit/core';
 import { ScheduleData, Lesson, Notification } from '../types';
-import { getLessonSpan, validateLesson, ConflictInfo } from '../utils/scheduleUtils';
-import { updateLesson, deleteLesson } from '../utils/api';
+import { getLessonSpan, validateLesson, ConflictInfo, getAllConflictingLessons, hasConflicts, getLessonConflictTypes } from '../utils/scheduleUtils';
+import { updateLesson, deleteLesson, createLesson } from '../utils/api';
 import { exportScheduleToPNG } from '../utils/exportUtils';
+import { useCopyPaste } from '../contexts/CopyPasteContext';
 import DraggableLesson from './DraggableLesson';
 import DroppableCell from './DroppableCell';
 import LessonForm from './LessonForm';
@@ -75,9 +76,13 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const [showEditForm, setShowEditForm] = useState(false);
   const [showConflictDialog, setShowConflictDialog] = useState(false);
   const [conflicts, setConflicts] = useState<ConflictInfo[]>([]);
+  const [showLessonConflictModal, setShowLessonConflictModal] = useState(false);
+  const [lessonConflicts, setLessonConflicts] = useState<ConflictInfo[]>([]);
+  const [pendingLessonAction, setPendingLessonAction] = useState<(() => void) | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | undefined>();
+  const { copiedLesson, hasCopiedLesson, clearCopiedLesson } = useCopyPaste();
 
   // Создаем кастомный алгоритм коллизий
   const customCollisionDetection = useMemo(() => 
@@ -173,6 +178,11 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     }).filter((lesson): lesson is NonNullable<typeof lesson> => lesson !== null);
   }, [scheduleData, timeSlots]);
 
+  // Вычисление конфликтов для всех уроков
+  const conflictMap = useMemo(() => {
+    return getAllConflictingLessons(lessonsWithPositions);
+  }, [lessonsWithPositions]);
+
   // Обработка начала перетаскивания - мемоизированная версия
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const lessonId = event.active.id as string;
@@ -258,6 +268,22 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     const detectedConflicts = validateLesson(updatedLesson, lessonsWithPositions);
     if (detectedConflicts.length > 0) {
       setConflicts(detectedConflicts);
+      setPendingLessonAction(() => async () => {
+        try {
+          await updateLesson(lessonId, { group_id: groupId, time_slot: finalTimeSlotId });
+          await onRefresh();
+          onNotification({
+            type: 'success',
+            message: 'Урок перемещен успешно (с конфликтами)'
+          });
+        } catch (error) {
+          console.error('Ошибка при обновлении урока:', error);
+          onNotification({
+            type: 'error',
+            message: 'Ошибка при обновлении урока'
+          });
+        }
+      });
       setShowConflictDialog(true);
       return;
     }
@@ -265,7 +291,7 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     try {
       await updateLesson(lessonId, { group_id: groupId, time_slot: finalTimeSlotId });
       
-      // Перезагружаем данные для обновления интерфейса
+      // Обновляем данные без показа индикатора загрузки (оптимизированная версия)
       await onRefresh();
 
       onNotification({
@@ -288,6 +314,79 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
     setShowLessonForm(true);
   }, []);
 
+  // Обработка вставки скопированного урока
+  const handlePasteLesson = useCallback(async (groupId: string, timeSlotId: string) => {
+    if (!copiedLesson || !scheduleData) return;
+
+    try {
+      // Создаем новый урок на основе скопированного, но с новыми координатами
+      const newLesson = {
+        group_id: groupId,
+        time_slot: timeSlotId,
+        subject_id: copiedLesson.subject_id,
+        teacher_id: copiedLesson.teacher_id,
+        assistant_id: copiedLesson.assistant_id,
+        room_id: copiedLesson.room_id,
+        duration: copiedLesson.duration,
+        color: copiedLesson.color,
+        comment: copiedLesson.comment,
+        additional_teachers: copiedLesson.additional_teachers?.map(t => t.id),
+        additional_assistants: copiedLesson.additional_assistants?.map(a => a.id),
+      };
+
+      // Проверяем конфликты
+      const timeSlotIndex = timeSlots.findIndex(slot => slot.id === timeSlotId);
+      const lessonSpan = getLessonSpan(newLesson.duration);
+      
+      const updatedLesson = {
+        ...newLesson,
+        id: 'temp-' + Date.now(), // Временный ID для валидации
+        startSlotIndex: timeSlotIndex,
+        endSlotIndex: timeSlotIndex + lessonSpan - 1,
+        // Восстанавливаем оригинальные типы для валидации
+        additional_teachers: copiedLesson.additional_teachers,
+        additional_assistants: copiedLesson.additional_assistants,
+      };
+
+      const detectedConflicts = validateLesson(updatedLesson, lessonsWithPositions);
+      
+      if (detectedConflicts.length > 0) {
+        setConflicts(detectedConflicts);
+        setPendingLessonAction(() => async () => {
+          try {
+            await createLesson(newLesson);
+            await onRefresh();
+            onNotification({
+              type: 'success',
+              message: 'Урок вставлен успешно (с конфликтами)'
+            });
+          } catch (error) {
+            console.error('Ошибка при создании урока:', error);
+            onNotification({
+              type: 'error',
+              message: 'Ошибка при создании урока'
+            });
+          }
+        });
+        setShowConflictDialog(true);
+        return;
+      }
+
+      await createLesson(newLesson);
+      await onRefresh();
+      onNotification({
+        type: 'success',
+        message: 'Урок вставлен успешно'
+      });
+    } catch (error) {
+      console.error('Ошибка при вставке урока:', error);
+      onNotification({
+        type: 'error',
+        message: 'Ошибка при вставке урока'
+      });
+    }
+  }, [copiedLesson, scheduleData, timeSlots, lessonsWithPositions, onNotification, onRefresh]);
+
   // Обработка успешного создания урока - мемоизированная версия
   const handleLessonCreated = useCallback(async (newLesson: Lesson) => {
     await onRefresh();
@@ -309,6 +408,30 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   const handleEditLesson = (lesson: Lesson) => {
     setEditingLesson(lesson);
     setShowEditForm(true);
+  };
+
+  const handleShowLessonConflicts = (conflicts: ConflictInfo[]) => {
+    setLessonConflicts(conflicts);
+    setShowLessonConflictModal(true);
+  };
+
+  // Функции для отображения конфликтов
+  const getConflictIcon = (type: string) => {
+    switch (type) {
+      case 'teacher': return '👨‍🏫';
+      case 'room': return '🏢';
+      case 'group': return '👥';
+      default: return '⚠️';
+    }
+  };
+
+  const getConflictColor = (type: string) => {
+    switch (type) {
+      case 'teacher': return '#ff9500';
+      case 'room': return '#ff3b30';
+      case 'group': return '#007aff';
+      default: return '#8e8e93';
+    }
   };
 
   // Обработка удаления урока
@@ -394,10 +517,51 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
   };
 
   // Обработка конфликтов при создании урока
-  const handleLessonConflicts = (conflicts: ConflictInfo[]) => {
+  const handleLessonConflicts = (conflicts: ConflictInfo[], onContinue?: () => void) => {
     setConflicts(conflicts);
+    if (onContinue) {
+      setPendingLessonAction(onContinue);
+    }
     setShowConflictDialog(true);
   };
+
+  // Обработка продолжения действия несмотря на конфликты
+  const handleContinueWithConflicts = () => {
+    if (pendingLessonAction) {
+      pendingLessonAction();
+      setPendingLessonAction(null);
+    }
+    setShowConflictDialog(false);
+  };
+
+  // Обработка горячих клавиш
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+C или Cmd+C - очистить скопированный урок
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && hasCopiedLesson) {
+        e.preventDefault();
+        clearCopiedLesson();
+        onNotification({
+          type: 'info',
+          message: 'Скопированный урок очищен'
+        });
+      }
+      
+      // Escape - очистить скопированный урок
+      if (e.key === 'Escape' && hasCopiedLesson) {
+        clearCopiedLesson();
+        onNotification({
+          type: 'info',
+          message: 'Скопированный урок очищен'
+        });
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [hasCopiedLesson, clearCopiedLesson, onNotification]);
 
   if (!scheduleData) {
     return (
@@ -460,6 +624,22 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
             >
               📷 PNG
             </button>
+            {hasCopiedLesson && (
+              <button 
+                className="btn-secondary"
+                onClick={() => {
+                  // Показываем уведомление о том, что нужно выбрать ячейку для вставки
+                  onNotification({
+                    type: 'info',
+                    message: 'Выберите ячейку и нажмите правую кнопку мыши для вставки урока'
+                  });
+                }}
+                style={{ padding: '8px 16px', fontSize: '14px', marginRight: '8px' }}
+                title="Вставить скопированный урок"
+              >
+                📋 Вставить урок
+              </button>
+            )}
             <button 
               className="btn-primary"
               onClick={() => {
@@ -519,7 +699,8 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
         <div className="schedule-header">
           <div className="group-header-empty"></div>
           {timeSlots.map((slot, index) => {
-            const isHourStart = index % 12 === 0;
+            // Определяем начало часа: первый слот (8:30) или каждый 12-й слот после 6-го
+            const isHourStart = index === 0 || (index >= 6 && (index - 6) % 12 === 0);
             const minute = parseInt(slot.startTime.split(':')[1]);
             
             return (
@@ -553,6 +734,8 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
                   groupId={group.id}
                   timeSlotId={slot.id}
                   onClick={() => handleCellClick(group.id, slot.id)}
+                  onPaste={handlePasteLesson}
+                  hasCopiedLesson={hasCopiedLesson}
                 />
               ))}
               
@@ -566,8 +749,12 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
                     startSlotIndex={lesson.startSlotIndex!}
                     span={lesson.span!}
                     groupIndex={groupIndex}
+                    hasConflicts={hasConflicts(lesson.id, conflictMap)}
+                    conflictTypes={getLessonConflictTypes(lesson.id, conflictMap)}
+                    conflictDetails={conflictMap.get(lesson.id) || []}
                     onEdit={handleEditLesson}
                     onDelete={handleDeleteLesson}
+                    onShowConflicts={handleShowLessonConflicts}
                     onResize={handleResizeLesson}
                   />
                 ))}
@@ -633,8 +820,74 @@ const Schedule: React.FC<ScheduleProps> = ({ scheduleData, onNotification, onRef
       {showConflictDialog && (
         <ConflictDialog
           conflicts={conflicts}
-          onClose={() => setShowConflictDialog(false)}
+          onClose={() => {
+            setShowConflictDialog(false);
+            setPendingLessonAction(null);
+          }}
+          onContinue={pendingLessonAction ? handleContinueWithConflicts : undefined}
         />
+      )}
+
+      {/* Модальное окно конфликтов урока */}
+      {showLessonConflictModal && (
+        <div className="modal-overlay conflict-modal" onClick={() => setShowLessonConflictModal(false)}>
+          <div className="modal-content conflict-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>⚠️ Конфликты в расписании</h2>
+              <button className="modal-close" onClick={() => setShowLessonConflictModal(false)}>×</button>
+            </div>
+            
+            <div className="conflict-content">
+              <p className="conflict-intro">
+                Обнаружены следующие конфликты в расписании:
+              </p>
+              
+              <div className="conflicts-list">
+                {lessonConflicts.map((conflict, index) => (
+                  <div key={index} className="conflict-item">
+                    <div 
+                      className="conflict-icon"
+                      style={{ color: getConflictColor(conflict.type) }}
+                    >
+                      {getConflictIcon(conflict.type)}
+                    </div>
+                    <div className="conflict-details">
+                      <div className="conflict-type">
+                        {conflict.type === 'teacher' && 'Конфликт преподавателя'}
+                        {conflict.type === 'room' && 'Конфликт аудитории'}
+                        {conflict.type === 'group' && 'Конфликт группы'}
+                      </div>
+                      <div className="conflict-message">
+                        {conflict.message}
+                      </div>
+                      <div className="conflict-lesson-info">
+                        <strong>Конфликтующий урок:</strong> {conflict.conflictingLesson?.subject_name || 'Неизвестный предмет'} 
+                        в {conflict.conflictingLesson?.room_name || 'Неизвестная аудитория'} 
+                        с {conflict.conflictingLesson?.teacher_name || 'Неизвестный преподаватель'}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="conflict-suggestions">
+                <h3>💡 Рекомендации:</h3>
+                <ul>
+                  <li>Выберите другое время для урока</li>
+                  <li>Назначьте другого преподавателя</li>
+                  <li>Выберите другую аудиторию</li>
+                  <li>Переместите конфликтующий урок</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="form-actions">
+              <button type="button" onClick={() => setShowLessonConflictModal(false)} className="btn-primary">
+                Понятно
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>

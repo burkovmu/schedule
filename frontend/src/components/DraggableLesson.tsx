@@ -1,23 +1,29 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Lesson } from '../types';
+import { ConflictInfo } from '../utils/scheduleUtils';
+import { useCopyPaste } from '../contexts/CopyPasteContext';
 
 interface DraggableLessonProps {
   lesson: Lesson;
   startSlotIndex: number;
   span: number;
   groupIndex: number;
+  hasConflicts?: boolean;
+  conflictTypes?: string[];
+  conflictDetails?: ConflictInfo[];
   onEdit?: (lesson: Lesson) => void;
   onDelete?: (lessonId: string) => void;
   onResize?: (lessonId: string, newDuration: number) => void;
+  onShowConflicts?: (conflicts: ConflictInfo[]) => void;
 }
 
 // Функция для вычисления времени урока
 const getLessonTime = (startSlotIndex: number, duration: number): string => {
   // Используем временные слоты из контекста для точного вычисления времени
   // startSlotIndex соответствует индексу в массиве timeSlots
-  const startHour = 9 + Math.floor(startSlotIndex / 12);
-  const startMinute = (startSlotIndex % 12) * 5;
+  const startHour = startSlotIndex < 6 ? 8 : 8 + Math.floor((startSlotIndex - 6) / 12) + 1;
+  const startMinute = startSlotIndex < 6 ? 30 + (startSlotIndex * 5) : ((startSlotIndex - 6) % 12) * 5;
   
   const endMinute = startMinute + duration;
   const endHour = startHour + Math.floor(endMinute / 60);
@@ -29,16 +35,42 @@ const getLessonTime = (startSlotIndex: number, duration: number): string => {
   return `${startTime}-${endTime}`;
 };
 
+// Функции для работы с конфликтами
+const getConflictIcon = (type: string) => {
+  switch (type) {
+    case 'teacher': return '👨‍🏫';
+    case 'room': return '🏢';
+    case 'group': return '👥';
+    default: return '⚠️';
+  }
+};
+
+const getConflictColor = (type: string) => {
+  switch (type) {
+    case 'teacher': return '#ff9500';
+    case 'room': return '#ff3b30';
+    case 'group': return '#007aff';
+    default: return '#8e8e93';
+  }
+};
+
 const DraggableLesson: React.FC<DraggableLessonProps> = ({ 
   lesson, 
   startSlotIndex, 
   span, 
   groupIndex,
+  hasConflicts = false,
+  conflictTypes = [],
+  conflictDetails = [],
   onEdit,
   onDelete,
-  onResize
+  onResize,
+  onShowConflicts
 }) => {
-  console.log('DraggableLesson rendered with onResize:', !!onResize);
+  const [showTeacherTooltip, setShowTeacherTooltip] = useState(false);
+  const [showAssistantTooltip, setShowAssistantTooltip] = useState(false);
+  const { copyLesson } = useCopyPaste();
+  
   const {
     attributes,
     listeners,
@@ -50,10 +82,44 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
   });
 
 
+
+  const backgroundColor = lesson.color || lesson.teacher_color || lesson.subject_color || '#667eea';
+
+  // Определяем стили для конфликтов
+  const getConflictStyles = () => {
+    if (!hasConflicts) return {};
+    
+    const conflictStyles: React.CSSProperties = {};
+    
+    // Добавляем красную рамку для конфликтов
+    conflictStyles.border = '2px solid #ff3b30';
+    conflictStyles.boxShadow = '0 0 8px rgba(255, 59, 48, 0.5)';
+    
+    // Если есть конфликт учителя, добавляем оранжевый оттенок
+    if (conflictTypes.includes('teacher')) {
+      conflictStyles.borderLeftColor = '#ff9500';
+      conflictStyles.borderLeftWidth = '4px';
+    }
+    
+    // Если есть конфликт кабинета, добавляем красный оттенок
+    if (conflictTypes.includes('room')) {
+      conflictStyles.borderTopColor = '#ff3b30';
+      conflictStyles.borderTopWidth = '4px';
+    }
+    
+    // Если есть конфликт группы, добавляем синий оттенок
+    if (conflictTypes.includes('group')) {
+      conflictStyles.borderRightColor = '#007aff';
+      conflictStyles.borderRightWidth = '4px';
+    }
+    
+    return conflictStyles;
+  };
+
   const style: React.CSSProperties = {
     gridColumn: `${startSlotIndex + 2} / span ${span}`,
     gridRow: 1,
-    backgroundColor: lesson.color || lesson.subject_color || '#667eea',
+    backgroundColor: backgroundColor,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     position: 'absolute',
     top: 0,
@@ -65,6 +131,7 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
     willChange: isDragging ? 'transform' : 'auto',
     backfaceVisibility: 'hidden',
     perspective: 1000,
+    ...getConflictStyles(),
   };
 
   const lessonTime = getLessonTime(startSlotIndex, lesson.duration);
@@ -81,6 +148,11 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
     if (onDelete && window.confirm('Вы уверены, что хотите удалить этот урок?')) {
       onDelete(lesson.id);
     }
+  };
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    copyLesson(lesson);
   };
 
 
@@ -105,15 +177,92 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
         }}
       >
         <div className="lesson-aligned">
-          <div className="lesson-time">{lessonTime}</div>
-          <div className="lesson-data-row">{lesson.subject_name}</div>
-          <div className="lesson-data-row">{lesson.teacher_name}</div>
-          <div className="lesson-data-row">{lesson.assistant_name || '—'}</div>
-          <div className="lesson-data-row">{lesson.room_name}</div>
+          <div className="lesson-time">
+            {lessonTime}
+            {hasConflicts && (
+              <span 
+                className="conflict-indicator clickable" 
+                title="Нажмите для подробной информации о конфликтах"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onShowConflicts && conflictDetails.length > 0) {
+                    onShowConflicts(conflictDetails);
+                  }
+                }}
+              >
+                ⚠️
+              </span>
+            )}
+          </div>
+          <div className="lesson-data-row">{lesson.subject_name || 'Неизвестный предмет'}</div>
+          <div className="lesson-data-row">
+            {lesson.teacher_name || 'Неизвестный преподаватель'}
+            {lesson.additional_teachers && lesson.additional_teachers.length > 0 && lesson.additional_teachers.filter(t => t).length > 0 && (
+              <span 
+                className="additional-staff clickable"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTeacherTooltip(!showTeacherTooltip);
+                }}
+                onMouseEnter={() => setShowTeacherTooltip(true)}
+                onMouseLeave={() => setShowTeacherTooltip(false)}
+              >
+                +{lesson.additional_teachers.filter(t => t).length}
+                {showTeacherTooltip && (
+                  <div className="tooltip">
+                    <div className="tooltip-content">
+                      <strong>Дополнительные преподаватели:</strong>
+                      {lesson.additional_teachers.filter(t => t).map((teacher, index) => (
+                        <div key={teacher.id} style={{ color: teacher.color }}>
+                          {index + 1}. {teacher?.name || 'Неизвестный преподаватель'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </span>
+            )}
+          </div>
+          <div className="lesson-data-row">
+            {lesson.assistant_name || '—'}
+            {lesson.additional_assistants && lesson.additional_assistants.length > 0 && lesson.additional_assistants.filter(a => a).length > 0 && (
+              <span 
+                className="additional-staff clickable"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAssistantTooltip(!showAssistantTooltip);
+                }}
+                onMouseEnter={() => setShowAssistantTooltip(true)}
+                onMouseLeave={() => setShowAssistantTooltip(false)}
+              >
+                +{lesson.additional_assistants.filter(a => a).length}
+                {showAssistantTooltip && (
+                  <div className="tooltip">
+                    <div className="tooltip-content">
+                      <strong>Дополнительные ассистенты:</strong>
+                      {lesson.additional_assistants.filter(a => a).map((assistant, index) => (
+                        <div key={assistant.id}>
+                          {index + 1}. {assistant?.name || 'Неизвестный ассистент'}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </span>
+            )}
+          </div>
+          <div className="lesson-data-row">{lesson.room_name || 'Неизвестная аудитория'}</div>
         </div>
         
         {/* Кнопки действий */}
         <div className="lesson-actions">
+          <button 
+            className="lesson-action-btn copy-btn"
+            onClick={handleCopy}
+            title="Копировать урок"
+          >
+            📋
+          </button>
           {onEdit && (
             <button 
               className="lesson-action-btn edit-btn"
@@ -172,6 +321,7 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
           </>
         )}
       </div>
+
 
     </div>
   );

@@ -98,7 +98,9 @@ const initializeSQLite = async () => {
     db.run(`CREATE TABLE IF NOT EXISTS groups (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
-      display_order INTEGER DEFAULT 0
+      display_order INTEGER DEFAULT 0,
+      assistant_id TEXT,
+      FOREIGN KEY (assistant_id) REFERENCES assistants (id)
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS subjects (
@@ -236,15 +238,16 @@ const generateTimeSlots = () => {
   const timeSlots = [];
   let slotId = 1;
 
-  for (let hour = 9; hour < 18; hour++) {
-    for (let minute = 0; minute < 60; minute += 5) {
+  for (let hour = 8; hour < 18; hour++) {
+    const startMinute = hour === 8 ? 30 : 0;
+    for (let minute = startMinute; minute < 60; minute += 5) {
       const startHour = hour;
       const startMinute = minute;
       const endMinute = minute + 5;
       const endHour = endMinute >= 60 ? hour + 1 : hour;
       const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
       
-      if (endHour > 18 || (endHour === 18 && finalEndMinute > 0)) {
+      if (endHour > 18) {
         break;
       }
       
@@ -326,6 +329,100 @@ app.post('/api/groups', async (req, res) => {
     }
   } catch (error) {
     console.error('Ошибка создания группы:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/groups/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Обрабатываем assistant_id - если пустая строка, устанавливаем null
+    if (updates.assistant_id === '') {
+      updates.assistant_id = null;
+    }
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('groups')
+        .update(updates)
+        .eq('id', id)
+        .select(`
+          *,
+          assistants(name)
+        `)
+        .single();
+      
+      if (error) throw error;
+      
+      const formattedData = {
+        ...data,
+        assistant_name: data.assistants?.name
+      };
+      
+      res.json(formattedData);
+    } else {
+      // Строим динамический SQL запрос только для переданных полей
+      const fields = [];
+      const values = [];
+      
+      if (updates.name !== undefined) {
+        fields.push('name = ?');
+        values.push(updates.name);
+      }
+      if (updates.display_order !== undefined) {
+        fields.push('display_order = ?');
+        values.push(updates.display_order);
+      }
+      if (updates.assistant_id !== undefined) {
+        fields.push('assistant_id = ?');
+        values.push(updates.assistant_id);
+      }
+      
+      if (fields.length === 0) {
+        return res.status(400).json({ error: 'Нет полей для обновления' });
+      }
+      
+      values.push(id);
+      
+      const sql = `UPDATE groups SET ${fields.join(', ')} WHERE id = ?`;
+      
+      db.run(sql, values, function(err) {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        // Получаем обновленную группу с информацией об ассистенте
+        db.get(`
+          SELECT g.*, a.name as assistant_name 
+          FROM groups g 
+          LEFT JOIN assistants a ON g.assistant_id = a.id 
+          WHERE g.id = ?
+        `, [id], function(err, row) {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          
+          if (!row) {
+            res.status(404).json({ error: 'Группа не найдена' });
+            return;
+          }
+          
+          res.json({
+            id: row.id,
+            name: row.name,
+            display_order: row.display_order,
+            assistant_id: row.assistant_id,
+            assistant_name: row.assistant_name
+          });
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка обновления группы:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -582,6 +679,70 @@ app.post('/api/assistants', async (req, res) => {
   }
 });
 
+app.put('/api/assistants/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('assistants')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      // Строим динамический SQL запрос только для переданных полей
+      const fields = [];
+      const values = [];
+      
+      if (updates.name !== undefined) {
+        fields.push('name = ?');
+        values.push(updates.name);
+      }
+      
+      if (fields.length === 0) {
+        return res.status(400).json({ error: 'Нет полей для обновления' });
+      }
+      
+      values.push(id);
+      
+      const sql = `UPDATE assistants SET ${fields.join(', ')} WHERE id = ?`;
+      
+      db.run(sql, values, function(err) {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        
+        // Получаем обновленного ассистента
+        db.get('SELECT * FROM assistants WHERE id = ?', [id], function(err, row) {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          
+          if (!row) {
+            res.status(404).json({ error: 'Ассистент не найден' });
+            return;
+          }
+          
+          res.json({
+            id: row.id,
+            name: row.name
+          });
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка обновления ассистента:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.delete('/api/assistants/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -605,6 +766,53 @@ app.delete('/api/assistants/:id', async (req, res) => {
     }
   } catch (error) {
     console.error('Ошибка удаления ассистента:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/assistants/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const assistants = names.map(name => ({ name }));
+      const { data, error } = await supabase
+        .from('assistants')
+        .insert(assistants)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const assistants = [];
+      let completed = 0;
+      let hasError = false;
+
+      names.forEach((name, index) => {
+        const id = uuidv4();
+        db.run('INSERT INTO assistants (id, name) VALUES (?, ?)', [id, name], function(err) {
+          if (err && !hasError) {
+            hasError = true;
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          
+          assistants.push({ id, name });
+          completed++;
+          
+          if (completed === names.length && !hasError) {
+            res.json(assistants);
+          }
+        });
+      });
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания ассистентов:', error);
     res.status(500).json({ error: error.message });
   }
 });
