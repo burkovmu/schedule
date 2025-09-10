@@ -95,15 +95,16 @@ const generateTimeSlots = () => {
   const timeSlots = [];
   let slotId = 1;
 
-  for (let hour = 9; hour < 18; hour++) {
-    for (let minute = 0; minute < 60; minute += 5) {
+  for (let hour = 8; hour < 18; hour++) {
+    const startMinute = hour === 8 ? 30 : 0;
+    for (let minute = startMinute; minute < 60; minute += 5) {
       const startHour = hour;
       const startMinute = minute;
       const endMinute = minute + 5;
       const endHour = endMinute >= 60 ? hour + 1 : hour;
       const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
       
-      if (endHour > 18 || (endHour === 18 && finalEndMinute > 0)) {
+      if (endHour > 18) {
         break;
       }
       
