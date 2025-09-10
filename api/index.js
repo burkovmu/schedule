@@ -17,6 +17,10 @@ app.use(express.json());
 let supabase = null;
 let useSupabase = false;
 
+console.log('🔧 Environment variables check:');
+console.log('🔧 SUPABASE_URL:', process.env.SUPABASE_URL ? 'SET' : 'NOT SET');
+console.log('🔧 SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY ? 'SET' : 'NOT SET');
+
 try {
   const { createClient } = require('@supabase/supabase-js');
   
@@ -33,6 +37,8 @@ try {
 } catch (error) {
   console.log('⚠️ Supabase не доступен, используем in-memory:', error.message);
 }
+
+console.log('🔧 Final configuration - useSupabase:', useSupabase);
 
 // In-memory хранилище как fallback
 let dataStore = {
@@ -815,33 +821,52 @@ app.post('/api/teachers/bulk', async (req, res) => {
 // Массовое создание ассистентов
 app.post('/api/assistants/bulk', async (req, res) => {
   try {
+    console.log('🔧 Bulk assistants request received');
+    console.log('🔧 Request body:', req.body);
+    console.log('🔧 useSupabase:', useSupabase);
+    
     const { names } = req.body;
     
     if (!Array.isArray(names) || names.length === 0) {
+      console.log('❌ Invalid names array:', names);
       res.status(400).json({ error: 'Список имен не может быть пустым' });
       return;
     }
 
+    console.log('✅ Processing names:', names);
+
     if (useSupabase) {
+      console.log('🔧 Using Supabase for bulk insert');
       const assistants = names.map(name => ({ name: name.trim() }));
+      console.log('🔧 Prepared assistants:', assistants);
+      
       const { data, error } = await supabase
         .from('assistants')
         .insert(assistants)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Supabase success:', data);
       res.json(data);
     } else {
+      console.log('🔧 Using in-memory store for bulk insert');
       const assistants = names.map(name => ({
         id: uuidv4(),
         name: name.trim()
       }));
       
+      console.log('🔧 Prepared assistants:', assistants);
       dataStore.assistants.push(...assistants);
+      console.log('✅ In-memory success, total assistants:', dataStore.assistants.length);
       res.json(assistants);
     }
   } catch (error) {
-    console.error('Ошибка массового создания ассистентов:', error);
+    console.error('❌ Ошибка массового создания ассистентов:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });

@@ -570,21 +570,37 @@ export const createGroupsBulk = async (names: string[]): Promise<Group[]> => {
 // Массовое создание ассистентов
 export const createAssistantsBulk = async (names: string[]): Promise<Assistant[]> => {
   try {
+    console.log('🔧 createAssistantsBulk called with names:', names);
+    console.log('🔧 API_BASE_URL:', API_BASE_URL);
+    console.log('🔧 Request URL:', `${API_BASE_URL}/assistants/bulk`);
+    
+    const requestBody = { names };
+    console.log('🔧 Request body:', requestBody);
+    
     const response = await fetch(`${API_BASE_URL}/assistants/bulk`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ names }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log('🔧 Response status:', response.status);
+    console.log('🔧 Response ok:', response.ok);
+    console.log('🔧 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error('Ошибка массового создания ассистентов');
+      const errorText = await response.text();
+      console.error('❌ Response error text:', errorText);
+      throw new Error(`Ошибка массового создания ассистентов: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('✅ createAssistantsBulk success:', result);
+    return result;
   } catch (error) {
-    console.error('Ошибка массового создания ассистентов:', error);
+    console.error('❌ Ошибка массового создания ассистентов:', error);
+    console.error('❌ Error stack:', error.stack);
     throw error;
   }
 };
