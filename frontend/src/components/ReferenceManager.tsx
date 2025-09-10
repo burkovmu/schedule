@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Teacher, Subject, Room, Group, Assistant } from '../types';
 import { createTeacher, updateTeacher, deleteTeacher } from '../utils/api';
 import { createSubject, updateSubject, deleteSubject } from '../utils/api';
-import { createRoom, deleteRoom } from '../utils/api';
+import { createRoom, updateRoom, deleteRoom } from '../utils/api';
 import { createGroup, updateGroup, deleteGroup } from '../utils/api';
 import { createAssistant, updateAssistant, deleteAssistant } from '../utils/api';
 import BulkUploadDialog from './BulkUploadDialog';
@@ -120,13 +120,15 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
           case 'subjects':
             await updateSubject(editingItem.id, formData);
             break;
+          case 'rooms':
+            await updateRoom(editingItem.id, formData);
+            break;
           case 'groups':
             await updateGroup(editingItem.id, formData);
             break;
           case 'assistants':
             await updateAssistant(editingItem.id, formData);
             break;
-          // TODO: Добавить API для обновления других типов
           default:
             onNotification({
               type: 'error',

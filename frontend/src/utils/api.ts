@@ -373,6 +373,32 @@ export const createRoom = async (roomData: Partial<Room>): Promise<Room> => {
   }
 };
 
+// Обновление аудитории
+export const updateRoom = async (id: string, updates: Partial<Room>): Promise<void> => {
+  try {
+    console.log('🔧 Updating room:', id, 'with updates:', updates);
+    
+    const response = await fetch(`${API_BASE_URL}/rooms/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Server response error:', response.status, errorText);
+      throw new Error(`Ошибка обновления аудитории: ${response.status} ${errorText}`);
+    }
+    
+    console.log('✅ Room updated successfully');
+  } catch (error) {
+    console.error('❌ Ошибка обновления аудитории:', error);
+    throw error;
+  }
+};
+
 // Удаление аудитории
 export const deleteRoom = async (id: string): Promise<void> => {
   try {
