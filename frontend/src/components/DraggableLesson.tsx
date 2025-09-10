@@ -35,24 +35,6 @@ const getLessonTime = (startSlotIndex: number, duration: number): string => {
   return `${startTime}-${endTime}`;
 };
 
-// Функции для работы с конфликтами
-const getConflictIcon = (type: string) => {
-  switch (type) {
-    case 'teacher': return '👨‍🏫';
-    case 'room': return '🏢';
-    case 'group': return '👥';
-    default: return '⚠️';
-  }
-};
-
-const getConflictColor = (type: string) => {
-  switch (type) {
-    case 'teacher': return '#ff9500';
-    case 'room': return '#ff3b30';
-    case 'group': return '#007aff';
-    default: return '#8e8e93';
-  }
-};
 
 const DraggableLesson: React.FC<DraggableLessonProps> = ({ 
   lesson, 
