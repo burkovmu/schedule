@@ -335,6 +335,36 @@ app.post('/api/subjects', async (req, res) => {
   }
 });
 
+app.put('/api/subjects/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('subjects')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const subjectIndex = dataStore.subjects.findIndex(s => s.id === id);
+      if (subjectIndex === -1) {
+        return res.status(404).json({ error: 'Предмет не найден' });
+      }
+      
+      dataStore.subjects[subjectIndex] = { ...dataStore.subjects[subjectIndex], ...updates };
+      res.json(dataStore.subjects[subjectIndex]);
+    }
+  } catch (error) {
+    console.error('Ошибка обновления предмета:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.delete('/api/subjects/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -397,6 +427,36 @@ app.post('/api/teachers', async (req, res) => {
     }
   } catch (error) {
     console.error('Ошибка создания преподавателя:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/teachers/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('teachers')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const teacherIndex = dataStore.teachers.findIndex(t => t.id === id);
+      if (teacherIndex === -1) {
+        return res.status(404).json({ error: 'Преподаватель не найден' });
+      }
+      
+      dataStore.teachers[teacherIndex] = { ...dataStore.teachers[teacherIndex], ...updates };
+      res.json(dataStore.teachers[teacherIndex]);
+    }
+  } catch (error) {
+    console.error('Ошибка обновления преподавателя:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -467,6 +527,36 @@ app.post('/api/assistants', async (req, res) => {
   }
 });
 
+app.put('/api/assistants/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('assistants')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const assistantIndex = dataStore.assistants.findIndex(a => a.id === id);
+      if (assistantIndex === -1) {
+        return res.status(404).json({ error: 'Ассистент не найден' });
+      }
+      
+      dataStore.assistants[assistantIndex] = { ...dataStore.assistants[assistantIndex], ...updates };
+      res.json(dataStore.assistants[assistantIndex]);
+    }
+  } catch (error) {
+    console.error('Ошибка обновления ассистента:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.delete('/api/assistants/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -529,6 +619,36 @@ app.post('/api/rooms', async (req, res) => {
     }
   } catch (error) {
     console.error('Ошибка создания аудитории:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/rooms/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    if (useSupabase) {
+      const { data, error } = await supabase
+        .from('rooms')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const roomIndex = dataStore.rooms.findIndex(r => r.id === id);
+      if (roomIndex === -1) {
+        return res.status(404).json({ error: 'Аудитория не найдена' });
+      }
+      
+      dataStore.rooms[roomIndex] = { ...dataStore.rooms[roomIndex], ...updates };
+      res.json(dataStore.rooms[roomIndex]);
+    }
+  } catch (error) {
+    console.error('Ошибка обновления аудитории:', error);
     res.status(500).json({ error: error.message });
   }
 });
