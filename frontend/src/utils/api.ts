@@ -482,21 +482,37 @@ export const deleteGroup = async (id: string): Promise<void> => {
 // Массовое создание преподавателей
 export const createTeachersBulk = async (names: string[]): Promise<Teacher[]> => {
   try {
+    console.log('🔧 createTeachersBulk called with names:', names);
+    console.log('🔧 API_BASE_URL:', API_BASE_URL);
+    console.log('🔧 Request URL:', `${API_BASE_URL}/teachers/bulk`);
+    
+    const requestBody = { names };
+    console.log('🔧 Request body:', requestBody);
+    
     const response = await fetch(`${API_BASE_URL}/teachers/bulk`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ names }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log('🔧 Response status:', response.status);
+    console.log('🔧 Response ok:', response.ok);
+    console.log('🔧 Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error('Ошибка массового создания преподавателей');
+      const errorText = await response.text();
+      console.error('❌ Response error text:', errorText);
+      throw new Error(`Ошибка массового создания преподавателей: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('✅ createTeachersBulk success:', result);
+    return result;
   } catch (error) {
-    console.error('Ошибка массового создания преподавателей:', error);
+    console.error('❌ Ошибка массового создания преподавателей:', error);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     throw error;
   }
 };

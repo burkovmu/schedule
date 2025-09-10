@@ -724,6 +724,7 @@ app.post('/api/groups/bulk', async (req, res) => {
 
     if (useSupabase) {
       const groups = names.map((name, index) => ({ 
+        id: uuidv4(),
         name: name.trim(), 
         display_order: index + 1 
       }));
@@ -761,7 +762,7 @@ app.post('/api/subjects/bulk', async (req, res) => {
     }
 
     if (useSupabase) {
-      const subjects = names.map(name => ({ name: name.trim() }));
+      const subjects = names.map(name => ({ id: uuidv4(), name: name.trim(), color: '#667eea' }));
       const { data, error } = await supabase
         .from('subjects')
         .insert(subjects)
@@ -787,33 +788,52 @@ app.post('/api/subjects/bulk', async (req, res) => {
 // Массовое создание преподавателей
 app.post('/api/teachers/bulk', async (req, res) => {
   try {
+    console.log('🔧 Bulk teachers request received');
+    console.log('🔧 Request body:', req.body);
+    console.log('🔧 useSupabase:', useSupabase);
+    
     const { names } = req.body;
     
     if (!Array.isArray(names) || names.length === 0) {
+      console.log('❌ Invalid names array:', names);
       res.status(400).json({ error: 'Список имен не может быть пустым' });
       return;
     }
 
+    console.log('✅ Processing names:', names);
+
     if (useSupabase) {
-      const teachers = names.map(name => ({ name: name.trim() }));
+      console.log('🔧 Using Supabase for bulk insert');
+      const teachers = names.map(name => ({ id: uuidv4(), name: name.trim() }));
+      console.log('🔧 Prepared teachers:', teachers);
+      
       const { data, error } = await supabase
         .from('teachers')
         .insert(teachers)
         .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Supabase success:', data);
       res.json(data);
     } else {
+      console.log('🔧 Using in-memory store for bulk insert');
       const teachers = names.map(name => ({
         id: uuidv4(),
         name: name.trim()
       }));
       
+      console.log('🔧 Prepared teachers:', teachers);
       dataStore.teachers.push(...teachers);
+      console.log('✅ In-memory success, total teachers:', dataStore.teachers.length);
       res.json(teachers);
     }
   } catch (error) {
-    console.error('Ошибка массового создания преподавателей:', error);
+    console.error('❌ Ошибка массового создания преподавателей:', error);
+    console.error('❌ Error stack:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
@@ -837,7 +857,7 @@ app.post('/api/assistants/bulk', async (req, res) => {
 
     if (useSupabase) {
       console.log('🔧 Using Supabase for bulk insert');
-      const assistants = names.map(name => ({ name: name.trim() }));
+      const assistants = names.map(name => ({ id: uuidv4(), name: name.trim() }));
       console.log('🔧 Prepared assistants:', assistants);
       
       const { data, error } = await supabase
@@ -882,7 +902,7 @@ app.post('/api/rooms/bulk', async (req, res) => {
     }
 
     if (useSupabase) {
-      const rooms = names.map(name => ({ name: name.trim() }));
+      const rooms = names.map(name => ({ id: uuidv4(), name: name.trim() }));
       const { data, error } = await supabase
         .from('rooms')
         .insert(rooms)
