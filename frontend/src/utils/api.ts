@@ -600,7 +600,7 @@ export const createAssistantsBulk = async (names: string[]): Promise<Assistant[]
     return result;
   } catch (error) {
     console.error('❌ Ошибка массового создания ассистентов:', error);
-    console.error('❌ Error stack:', error.stack);
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     throw error;
   }
 };
