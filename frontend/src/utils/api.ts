@@ -254,6 +254,8 @@ export const createTeacher = async (teacherData: Partial<Teacher>): Promise<Teac
 // Обновление преподавателя
 export const updateTeacher = async (id: string, updates: Partial<Teacher>): Promise<void> => {
   try {
+    console.log('🔧 Updating teacher:', id, 'with updates:', updates);
+    
     const response = await fetch(`${API_BASE_URL}/teachers/${id}`, {
       method: 'PUT',
       headers: {
@@ -263,10 +265,14 @@ export const updateTeacher = async (id: string, updates: Partial<Teacher>): Prom
     });
 
     if (!response.ok) {
-      throw new Error('Ошибка обновления преподавателя');
+      const errorText = await response.text();
+      console.error('❌ Server response error:', response.status, errorText);
+      throw new Error(`Ошибка обновления преподавателя: ${response.status} ${errorText}`);
     }
+    
+    console.log('✅ Teacher updated successfully');
   } catch (error) {
-    console.error('Ошибка обновления преподавателя:', error);
+    console.error('❌ Ошибка обновления преподавателя:', error);
     throw error;
   }
 };

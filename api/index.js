@@ -436,6 +436,9 @@ app.put('/api/teachers/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
+    console.log('🔧 Updating teacher:', id, 'with updates:', updates);
+    console.log('🔧 useSupabase:', useSupabase);
+    
     if (useSupabase) {
       const { data, error } = await supabase
         .from('teachers')
@@ -444,19 +447,26 @@ app.put('/api/teachers/:id', async (req, res) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Teacher updated successfully:', data);
       res.json(data);
     } else {
       const teacherIndex = dataStore.teachers.findIndex(t => t.id === id);
       if (teacherIndex === -1) {
+        console.error('❌ Teacher not found:', id);
         return res.status(404).json({ error: 'Преподаватель не найден' });
       }
       
       dataStore.teachers[teacherIndex] = { ...dataStore.teachers[teacherIndex], ...updates };
+      console.log('✅ Teacher updated in memory:', dataStore.teachers[teacherIndex]);
       res.json(dataStore.teachers[teacherIndex]);
     }
   } catch (error) {
-    console.error('Ошибка обновления преподавателя:', error);
+    console.error('❌ Ошибка обновления преподавателя:', error);
     res.status(500).json({ error: error.message });
   }
 });
