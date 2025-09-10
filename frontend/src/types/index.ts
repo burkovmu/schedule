@@ -23,6 +23,7 @@ export interface Teacher {
   id: string;
   name: string;
   color: string;
+  display_order?: number;
 }
 
 export interface Assistant {

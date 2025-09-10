@@ -79,9 +79,9 @@ let dataStore = {
     { id: 'subj4', name: 'Биология', color: '#43e97b' }
   ],
   teachers: [
-    { id: 'teach1', name: 'Иванов И.И.', color: '#667eea' },
-    { id: 'teach2', name: 'Петров П.П.', color: '#f093fb' },
-    { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe' }
+    { id: 'teach1', name: 'Иванов И.И.', color: '#667eea', display_order: 1 },
+    { id: 'teach2', name: 'Петров П.П.', color: '#f093fb', display_order: 2 },
+    { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe', display_order: 3 }
   ],
   assistants: [
     { id: 'assist1', name: 'Козлов К.К.' },
@@ -393,16 +393,17 @@ app.get('/api/teachers', async (req, res) => {
     if (useSupabase) {
       const { data, error } = await supabase
         .from('teachers')
-        .select('*');
+        .select('*')
+        .order('display_order', { ascending: true });
       
       if (error) throw error;
       res.json(data);
     } else {
-      res.json(dataStore.teachers);
+      res.json(dataStore.teachers.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
     }
   } catch (error) {
     console.error('Ошибка получения преподавателей:', error);
-    res.json(dataStore.teachers);
+    res.json(dataStore.teachers.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
   }
 });
 
@@ -412,16 +413,28 @@ app.post('/api/teachers', async (req, res) => {
     const id = uuidv4();
     
     if (useSupabase) {
+      // Получаем максимальный display_order
+      const { data: maxOrderData, error: maxOrderError } = await supabase
+        .from('teachers')
+        .select('display_order')
+        .order('display_order', { ascending: false })
+        .limit(1);
+      
+      const nextOrder = maxOrderData && maxOrderData.length > 0 
+        ? (maxOrderData[0].display_order || 0) + 1 
+        : 1;
+      
       const { data, error } = await supabase
         .from('teachers')
-        .insert([{ id, name, color: color || '#667eea' }])
+        .insert([{ id, name, color: color || '#667eea', display_order: nextOrder }])
         .select()
         .single();
       
       if (error) throw error;
       res.json(data);
     } else {
-      const newTeacher = { id, name, color: color || '#667eea' };
+      const maxOrder = Math.max(...dataStore.teachers.map(t => t.display_order || 0), 0);
+      const newTeacher = { id, name, color: color || '#667eea', display_order: maxOrder + 1 };
       dataStore.teachers.push(newTeacher);
       res.json(newTeacher);
     }

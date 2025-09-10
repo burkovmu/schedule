@@ -39,9 +39,9 @@ try {
       { id: 'subj4', name: 'Биология', color: '#43e97b' }
     ],
     teachers: [
-      { id: 'teach1', name: 'Иванов И.И.', color: '#667eea' },
-      { id: 'teach2', name: 'Петров П.П.', color: '#f093fb' },
-      { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe' }
+      { id: 'teach1', name: 'Иванов И.И.', color: '#667eea', display_order: 1 },
+      { id: 'teach2', name: 'Петров П.П.', color: '#f093fb', display_order: 2 },
+      { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe', display_order: 3 }
     ],
     assistants: [
       { id: 'assist1', name: 'Козлов К.К.' },
@@ -175,13 +175,14 @@ app.delete('/api/subjects/:id', (req, res) => {
 
 // Преподаватели
 app.get('/api/teachers', (req, res) => {
-  res.json(dataStore.teachers);
+  res.json(dataStore.teachers.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
 });
 
 app.post('/api/teachers', (req, res) => {
   const { name, color } = req.body;
   const id = uuidv4();
-  const newTeacher = { id, name, color: color || '#667eea' };
+  const maxOrder = Math.max(...dataStore.teachers.map(t => t.display_order || 0), 0);
+  const newTeacher = { id, name, color: color || '#667eea', display_order: maxOrder + 1 };
   dataStore.teachers.push(newTeacher);
   res.json(newTeacher);
 });

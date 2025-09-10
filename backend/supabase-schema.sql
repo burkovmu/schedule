@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS teachers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     color TEXT DEFAULT '#667eea',
+    display_order INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
