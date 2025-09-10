@@ -79,9 +79,9 @@ let dataStore = {
     { id: 'subj4', name: 'Биология', color: '#43e97b' }
   ],
   teachers: [
-    { id: 'teach1', name: 'Иванов И.И.' },
-    { id: 'teach2', name: 'Петров П.П.' },
-    { id: 'teach3', name: 'Сидоров С.С.' }
+    { id: 'teach1', name: 'Иванов И.И.', color: '#667eea' },
+    { id: 'teach2', name: 'Петров П.П.', color: '#f093fb' },
+    { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe' }
   ],
   assistants: [
     { id: 'assist1', name: 'Козлов К.К.' },
@@ -408,20 +408,20 @@ app.get('/api/teachers', async (req, res) => {
 
 app.post('/api/teachers', async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, color } = req.body;
     const id = uuidv4();
     
     if (useSupabase) {
       const { data, error } = await supabase
         .from('teachers')
-        .insert([{ id, name }])
+        .insert([{ id, name, color: color || '#667eea' }])
         .select()
         .single();
       
       if (error) throw error;
       res.json(data);
     } else {
-      const newTeacher = { id, name };
+      const newTeacher = { id, name, color: color || '#667eea' };
       dataStore.teachers.push(newTeacher);
       res.json(newTeacher);
     }

@@ -39,9 +39,9 @@ try {
       { id: 'subj4', name: 'Биология', color: '#43e97b' }
     ],
     teachers: [
-      { id: 'teach1', name: 'Иванов И.И.' },
-      { id: 'teach2', name: 'Петров П.П.' },
-      { id: 'teach3', name: 'Сидоров С.С.' }
+      { id: 'teach1', name: 'Иванов И.И.', color: '#667eea' },
+      { id: 'teach2', name: 'Петров П.П.', color: '#f093fb' },
+      { id: 'teach3', name: 'Сидоров С.С.', color: '#4facfe' }
     ],
     assistants: [
       { id: 'assist1', name: 'Козлов К.К.' },
@@ -112,6 +112,24 @@ app.post('/api/groups', (req, res) => {
   res.json(newGroup);
 });
 
+app.put('/api/groups/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const groupIndex = dataStore.groups.findIndex(g => g.id === id);
+  if (groupIndex === -1) {
+    return res.status(404).json({ error: 'Группа не найдена' });
+  }
+  
+  // Обновляем группу
+  dataStore.groups[groupIndex] = {
+    ...dataStore.groups[groupIndex],
+    ...updates
+  };
+  
+  res.json(dataStore.groups[groupIndex]);
+});
+
 app.delete('/api/groups/:id', (req, res) => {
   const { id } = req.params;
   dataStore.groups = dataStore.groups.filter(g => g.id !== id);
@@ -131,6 +149,24 @@ app.post('/api/subjects', (req, res) => {
   res.json(newSubject);
 });
 
+app.put('/api/subjects/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const subjectIndex = dataStore.subjects.findIndex(s => s.id === id);
+  if (subjectIndex === -1) {
+    return res.status(404).json({ error: 'Предмет не найден' });
+  }
+  
+  // Обновляем предмет
+  dataStore.subjects[subjectIndex] = {
+    ...dataStore.subjects[subjectIndex],
+    ...updates
+  };
+  
+  res.json(dataStore.subjects[subjectIndex]);
+});
+
 app.delete('/api/subjects/:id', (req, res) => {
   const { id } = req.params;
   dataStore.subjects = dataStore.subjects.filter(s => s.id !== id);
@@ -143,11 +179,29 @@ app.get('/api/teachers', (req, res) => {
 });
 
 app.post('/api/teachers', (req, res) => {
-  const { name } = req.body;
+  const { name, color } = req.body;
   const id = uuidv4();
-  const newTeacher = { id, name };
+  const newTeacher = { id, name, color: color || '#667eea' };
   dataStore.teachers.push(newTeacher);
   res.json(newTeacher);
+});
+
+app.put('/api/teachers/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const teacherIndex = dataStore.teachers.findIndex(t => t.id === id);
+  if (teacherIndex === -1) {
+    return res.status(404).json({ error: 'Преподаватель не найден' });
+  }
+  
+  // Обновляем преподавателя
+  dataStore.teachers[teacherIndex] = {
+    ...dataStore.teachers[teacherIndex],
+    ...updates
+  };
+  
+  res.json(dataStore.teachers[teacherIndex]);
 });
 
 app.delete('/api/teachers/:id', (req, res) => {
@@ -221,6 +275,24 @@ app.post('/api/rooms', (req, res) => {
   const newRoom = { id, name };
   dataStore.rooms.push(newRoom);
   res.json(newRoom);
+});
+
+app.put('/api/rooms/:id', (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  
+  const roomIndex = dataStore.rooms.findIndex(r => r.id === id);
+  if (roomIndex === -1) {
+    return res.status(404).json({ error: 'Аудитория не найдена' });
+  }
+  
+  // Обновляем аудиторию
+  dataStore.rooms[roomIndex] = {
+    ...dataStore.rooms[roomIndex],
+    ...updates
+  };
+  
+  res.json(dataStore.rooms[roomIndex]);
 });
 
 app.delete('/api/rooms/:id', (req, res) => {
