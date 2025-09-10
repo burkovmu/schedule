@@ -704,5 +704,181 @@ app.delete('/api/lessons/:id', async (req, res) => {
   }
 });
 
+// Bulk endpoints для массового добавления
+
+// Массовое создание групп
+app.post('/api/groups/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const groups = names.map((name, index) => ({ 
+        name: name.trim(), 
+        display_order: index + 1 
+      }));
+      const { data, error } = await supabase
+        .from('groups')
+        .insert(groups)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const groups = names.map((name, index) => ({
+        id: uuidv4(),
+        name: name.trim(),
+        display_order: index + 1
+      }));
+      
+      dataStore.groups.push(...groups);
+      res.json(groups);
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания групп:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Массовое создание предметов
+app.post('/api/subjects/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const subjects = names.map(name => ({ name: name.trim() }));
+      const { data, error } = await supabase
+        .from('subjects')
+        .insert(subjects)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const subjects = names.map(name => ({
+        id: uuidv4(),
+        name: name.trim()
+      }));
+      
+      dataStore.subjects.push(...subjects);
+      res.json(subjects);
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания предметов:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Массовое создание преподавателей
+app.post('/api/teachers/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const teachers = names.map(name => ({ name: name.trim() }));
+      const { data, error } = await supabase
+        .from('teachers')
+        .insert(teachers)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const teachers = names.map(name => ({
+        id: uuidv4(),
+        name: name.trim()
+      }));
+      
+      dataStore.teachers.push(...teachers);
+      res.json(teachers);
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания преподавателей:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Массовое создание ассистентов
+app.post('/api/assistants/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const assistants = names.map(name => ({ name: name.trim() }));
+      const { data, error } = await supabase
+        .from('assistants')
+        .insert(assistants)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const assistants = names.map(name => ({
+        id: uuidv4(),
+        name: name.trim()
+      }));
+      
+      dataStore.assistants.push(...assistants);
+      res.json(assistants);
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания ассистентов:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Массовое создание аудиторий
+app.post('/api/rooms/bulk', async (req, res) => {
+  try {
+    const { names } = req.body;
+    
+    if (!Array.isArray(names) || names.length === 0) {
+      res.status(400).json({ error: 'Список имен не может быть пустым' });
+      return;
+    }
+
+    if (useSupabase) {
+      const rooms = names.map(name => ({ name: name.trim() }));
+      const { data, error } = await supabase
+        .from('rooms')
+        .insert(rooms)
+        .select();
+      
+      if (error) throw error;
+      res.json(data);
+    } else {
+      const rooms = names.map(name => ({
+        id: uuidv4(),
+        name: name.trim()
+      }));
+      
+      dataStore.rooms.push(...rooms);
+      res.json(rooms);
+    }
+  } catch (error) {
+    console.error('Ошибка массового создания аудиторий:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Экспортируем для Vercel
 module.exports = app;
