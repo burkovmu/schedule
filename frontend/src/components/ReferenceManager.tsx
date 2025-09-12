@@ -45,8 +45,13 @@ const ReferenceManager: React.FC<ReferenceManagerProps> = ({
   };
 
   const handleEdit = (item: any) => {
-    // Инициализируем formData в зависимости от типа
+    // Инициализируем formData в зависимости от типа, исключая служебные поля
     const initialData = { ...item };
+    
+    // Удаляем служебные поля, которые не должны редактироваться
+    delete initialData.created_at;
+    delete initialData.updated_at;
+    delete initialData.assistant_name;
     
     // Для предметов и преподавателей убеждаемся, что цвет установлен
     if ((type === 'subjects' || type === 'teachers') && !initialData.color) {

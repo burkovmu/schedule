@@ -476,14 +476,20 @@ export const deleteAssistant = async (id: string): Promise<void> => {
 // Обновление группы
 export const updateGroup = async (id: string, groupData: Partial<Group>): Promise<Group> => {
   try {
-    console.log('🔧 Updating group:', id, 'with data:', groupData);
+    // Фильтруем служебные поля, которые не должны обновляться
+    const cleanData = { ...groupData };
+    delete (cleanData as any).created_at;
+    delete (cleanData as any).updated_at;
+    delete (cleanData as any).assistant_name;
+    
+    console.log('🔧 Updating group:', id, 'with clean data:', cleanData);
     
     const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(groupData),
+      body: JSON.stringify(cleanData),
     });
 
     if (!response.ok) {
