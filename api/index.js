@@ -232,18 +232,31 @@ app.put('/api/groups/:id', async (req, res) => {
     }
     
     if (useSupabase) {
-      const { data, error } = await supabase
+      // Сначала обновляем группу
+      const { data: updateData, error: updateError } = await supabase
         .from('groups')
         .update(updates)
         .eq('id', id)
+        .select('*')
+        .single();
+      
+      if (updateError) {
+        console.error('❌ Supabase update error:', updateError);
+        throw updateError;
+      }
+      
+      // Затем получаем обновленную группу с ассистентом
+      const { data, error } = await supabase
+        .from('groups')
         .select(`
           *,
           assistants(name)
         `)
+        .eq('id', id)
         .single();
       
       if (error) {
-        console.error('❌ Supabase error:', error);
+        console.error('❌ Supabase select error:', error);
         throw error;
       }
       
