@@ -2819,41 +2819,96 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e5e5ea;
+  padding: 16px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12px;
+  border: 1px solid #e1e5e9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.checkbox-group:hover {
+  border-color: #007AFF;
+  box-shadow: 0 4px 8px rgba(0, 122, 255, 0.1);
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px solid #e1e5e9;
+  min-width: 120px;
+  justify-content: flex-start;
 }
 
 .checkbox-item:hover {
-  background-color: rgba(0, 122, 255, 0.05);
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.05) 0%, rgba(0, 122, 255, 0.1) 100%);
+  border-color: #007AFF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
 }
 
-.checkbox-item input[type="checkbox"] {
+.checkbox-item:has(input:checked) {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(0, 122, 255, 0.15) 100%);
+  border-color: #007AFF;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+}
+
+.checkbox-item input[type="checkbox"],
+.checkbox-item input[type="radio"] {
   width: 16px;
   height: 16px;
   cursor: pointer;
   accent-color: #007aff;
+  margin: 0;
+}
+
+/* Специальные стили для radio buttons */
+.checkbox-item input[type="radio"] {
+  transform: scale(1.1);
+}
+
+.checkbox-item input[type="radio"]:checked {
+  accent-color: #007AFF;
 }
 
 .teacher-name {
   font-weight: 500;
+  margin-left: 2px;
 }
 
 .assistant-name {
   font-weight: 500;
   color: #1d1d1f;
+  margin-left: 2px;
+}
+
+/* Специальные стили для опции "Не выбрано" */
+.checkbox-item.no-selection {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-color: #dee2e6;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.checkbox-item.no-selection:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  border-color: #adb5bd;
+}
+
+.checkbox-item.no-selection:has(input:checked) {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(0, 122, 255, 0.15) 100%);
+  border-color: #007AFF;
+  color: #495057;
+  font-weight: 600;
+  font-style: normal;
 }
 
 /* Стили для отображения персонала в уроках */
@@ -2861,11 +2916,25 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  gap: 0;
+  font-size: 0.8rem; /* Наследуем размер от lesson-data-row */
 }
 
 .main-staff {
   font-weight: 500;
+  color: white;
+  font-size: 0.8rem !important; /* Принудительно устанавливаем тот же размер */
+}
+
+.additional-staff {
+  font-weight: 500;
+  opacity: 1;
+  font-size: 0.8rem !important; /* Принудительно устанавливаем тот же размер */
+  color: white !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 .additional-staff-list {

@@ -171,13 +171,13 @@ const LessonForm: React.FC<LessonFormProps> = ({
     });
   };
 
-  // Обработчики для множественного выбора
+  // Обработчики для выбора одного дополнительного преподавателя и ассистента
   const handleAdditionalTeacherToggle = (teacherId: string) => {
     setFormData(prev => ({
       ...prev,
       additional_teachers: prev.additional_teachers.includes(teacherId)
-        ? prev.additional_teachers.filter(id => id !== teacherId)
-        : [...prev.additional_teachers, teacherId]
+        ? [] // Убираем, если уже выбран
+        : [teacherId] // Выбираем только одного
     }));
   };
 
@@ -185,8 +185,8 @@ const LessonForm: React.FC<LessonFormProps> = ({
     setFormData(prev => ({
       ...prev,
       additional_assistants: prev.additional_assistants.includes(assistantId)
-        ? prev.additional_assistants.filter(id => id !== assistantId)
-        : [...prev.additional_assistants, assistantId]
+        ? [] // Убираем, если уже выбран
+        : [assistantId] // Выбираем только одного
     }));
   };
 
@@ -354,12 +354,22 @@ const LessonForm: React.FC<LessonFormProps> = ({
             <div className="form-group full-width">
               <label>Дополнительные преподаватели</label>
               <div className="checkbox-group">
+                <label className="checkbox-item no-selection">
+                  <input
+                    type="radio"
+                    name="additional_teacher"
+                    checked={formData.additional_teachers.length === 0}
+                    onChange={() => setFormData(prev => ({ ...prev, additional_teachers: [] }))}
+                  />
+                  <span className="teacher-name">Не выбрано</span>
+                </label>
                 {teachers
                   .filter(teacher => teacher && teacher.id !== formData.teacher_id)
                   .map(teacher => (
                     <label key={teacher.id} className="checkbox-item">
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="additional_teacher"
                         checked={formData.additional_teachers.includes(teacher.id)}
                         onChange={() => handleAdditionalTeacherToggle(teacher.id)}
                       />
@@ -377,12 +387,22 @@ const LessonForm: React.FC<LessonFormProps> = ({
             <div className="form-group full-width">
               <label>Дополнительные ассистенты</label>
               <div className="checkbox-group">
+                <label className="checkbox-item no-selection">
+                  <input
+                    type="radio"
+                    name="additional_assistant"
+                    checked={formData.additional_assistants.length === 0}
+                    onChange={() => setFormData(prev => ({ ...prev, additional_assistants: [] }))}
+                  />
+                  <span className="assistant-name">Не выбрано</span>
+                </label>
                 {assistants
                   .filter(assistant => assistant && assistant.id !== formData.assistant_id)
                   .map(assistant => (
                     <label key={assistant.id} className="checkbox-item">
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="additional_assistant"
                         checked={formData.additional_assistants.includes(assistant.id)}
                         onChange={() => handleAdditionalAssistantToggle(assistant.id)}
                       />

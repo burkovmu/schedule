@@ -1,4 +1,4 @@
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Lesson } from '../types';
 import { ConflictInfo } from '../utils/scheduleUtils';
@@ -49,8 +49,6 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
   onResize,
   onShowConflicts
 }) => {
-  const [showTeacherTooltip, setShowTeacherTooltip] = useState(false);
-  const [showAssistantTooltip, setShowAssistantTooltip] = useState(false);
   const { copyLesson } = useCopyPaste();
   
   const {
@@ -178,60 +176,28 @@ const DraggableLesson: React.FC<DraggableLessonProps> = ({
           </div>
           <div className="lesson-data-row">{lesson.subject_name || 'Неизвестный предмет'}</div>
           <div className="lesson-data-row">
-            {lesson.teacher_name || 'Неизвестный преподаватель'}
-            {lesson.additional_teachers && lesson.additional_teachers.length > 0 && lesson.additional_teachers.filter(t => t).length > 0 && (
-              <span 
-                className="additional-staff clickable"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowTeacherTooltip(!showTeacherTooltip);
-                }}
-                onMouseEnter={() => setShowTeacherTooltip(true)}
-                onMouseLeave={() => setShowTeacherTooltip(false)}
-              >
-                +{lesson.additional_teachers.filter(t => t).length}
-                {showTeacherTooltip && (
-                  <div className="tooltip">
-                    <div className="tooltip-content">
-                      <strong>Дополнительные преподаватели:</strong>
-                      {lesson.additional_teachers.filter(t => t).map((teacher, index) => (
-                        <div key={teacher.id} style={{ color: teacher.color }}>
-                          {index + 1}. {teacher?.name || 'Неизвестный преподаватель'}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <div className="staff-list">
+              <span className="main-staff">
+                {lesson.teacher_name || 'Неизвестный преподаватель'}
               </span>
-            )}
+              {lesson.additional_teachers && lesson.additional_teachers.length > 0 && lesson.additional_teachers.filter(t => t).map((teacher, index) => (
+                <span key={teacher.id} className="additional-staff">
+                  {index === 0 ? ', ' : ''}{teacher?.name || 'Неизвестный преподаватель'}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="lesson-data-row">
-            {lesson.assistant_name || '—'}
-            {lesson.additional_assistants && lesson.additional_assistants.length > 0 && lesson.additional_assistants.filter(a => a).length > 0 && (
-              <span 
-                className="additional-staff clickable"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowAssistantTooltip(!showAssistantTooltip);
-                }}
-                onMouseEnter={() => setShowAssistantTooltip(true)}
-                onMouseLeave={() => setShowAssistantTooltip(false)}
-              >
-                +{lesson.additional_assistants.filter(a => a).length}
-                {showAssistantTooltip && (
-                  <div className="tooltip">
-                    <div className="tooltip-content">
-                      <strong>Дополнительные ассистенты:</strong>
-                      {lesson.additional_assistants.filter(a => a).map((assistant, index) => (
-                        <div key={assistant.id}>
-                          {index + 1}. {assistant?.name || 'Неизвестный ассистент'}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+            <div className="staff-list">
+              <span className="main-staff">
+                {lesson.assistant_name || '—'}
               </span>
-            )}
+              {lesson.additional_assistants && lesson.additional_assistants.length > 0 && lesson.additional_assistants.filter(a => a).map((assistant, index) => (
+                <span key={assistant.id} className="additional-staff">
+                  {index === 0 ? ', ' : ''}{assistant?.name || 'Неизвестный ассистент'}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="lesson-data-row">{lesson.room_name || 'Неизвестная аудитория'}</div>
         </div>
