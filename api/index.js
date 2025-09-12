@@ -144,17 +144,30 @@ app.get('/api/groups', async (req, res) => {
     if (useSupabase) {
       const { data, error } = await supabase
         .from('groups')
-        .select(`
-          *,
-          assistants(name)
-        `)
+        .select('*')
         .order('display_order');
       
       if (error) throw error;
       
-      const formattedData = data.map(group => ({
-        ...group,
-        assistant_name: group.assistants?.name
+      // Получаем имена ассистентов отдельно
+      const formattedData = await Promise.all(data.map(async (group) => {
+        let assistantName = null;
+        if (group.assistant_id) {
+          const { data: assistantData, error: assistantError } = await supabase
+            .from('assistants')
+            .select('name')
+            .eq('id', group.assistant_id)
+            .single();
+          
+          if (!assistantError && assistantData) {
+            assistantName = assistantData.name;
+          }
+        }
+        
+        return {
+          ...group,
+          assistant_name: assistantName
+        };
       }));
       
       res.json(formattedData);
@@ -187,17 +200,28 @@ app.post('/api/groups', async (req, res) => {
       const { data, error } = await supabase
         .from('groups')
         .insert([{ id, name, display_order: display_order || 0, assistant_id: processedAssistantId }])
-        .select(`
-          *,
-          assistants(name)
-        `)
+        .select('*')
         .single();
       
       if (error) throw error;
       
+      // Получаем имя ассистента отдельно
+      let assistantName = null;
+      if (data.assistant_id) {
+        const { data: assistantData, error: assistantError } = await supabase
+          .from('assistants')
+          .select('name')
+          .eq('id', data.assistant_id)
+          .single();
+        
+        if (!assistantError && assistantData) {
+          assistantName = assistantData.name;
+        }
+      }
+      
       const formattedData = {
         ...data,
-        assistant_name: data.assistants?.name
+        assistant_name: assistantName
       };
       
       res.json(formattedData);
@@ -232,7 +256,7 @@ app.put('/api/groups/:id', async (req, res) => {
     }
     
     if (useSupabase) {
-      // Сначала обновляем группу
+      // Обновляем группу
       const { data: updateData, error: updateError } = await supabase
         .from('groups')
         .update(updates)
@@ -245,24 +269,23 @@ app.put('/api/groups/:id', async (req, res) => {
         throw updateError;
       }
       
-      // Затем получаем обновленную группу с ассистентом
-      const { data, error } = await supabase
-        .from('groups')
-        .select(`
-          *,
-          assistants(name)
-        `)
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        console.error('❌ Supabase select error:', error);
-        throw error;
+      // Получаем имя ассистента отдельно
+      let assistantName = null;
+      if (updateData.assistant_id) {
+        const { data: assistantData, error: assistantError } = await supabase
+          .from('assistants')
+          .select('name')
+          .eq('id', updateData.assistant_id)
+          .single();
+        
+        if (!assistantError && assistantData) {
+          assistantName = assistantData.name;
+        }
       }
       
       const formattedData = {
-        ...data,
-        assistant_name: data.assistants?.name
+        ...updateData,
+        assistant_name: assistantName
       };
       
       console.log('✅ Group updated successfully in Supabase:', formattedData);
