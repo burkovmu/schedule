@@ -223,6 +223,9 @@ app.put('/api/groups/:id', async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
+    console.log('🔧 Updating group:', id, 'with updates:', updates);
+    console.log('🔧 useSupabase:', useSupabase);
+    
     // Обрабатываем assistant_id - если пустая строка, устанавливаем null
     if (updates.assistant_id === '') {
       updates.assistant_id = null;
@@ -239,17 +242,22 @@ app.put('/api/groups/:id', async (req, res) => {
         `)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
       
       const formattedData = {
         ...data,
         assistant_name: data.assistants?.name
       };
       
+      console.log('✅ Group updated successfully in Supabase:', formattedData);
       res.json(formattedData);
     } else {
       const groupIndex = dataStore.groups.findIndex(g => g.id === id);
       if (groupIndex === -1) {
+        console.error('❌ Group not found:', id);
         return res.status(404).json({ error: 'Группа не найдена' });
       }
       
@@ -258,13 +266,16 @@ app.put('/api/groups/:id', async (req, res) => {
       const updatedGroup = dataStore.groups[groupIndex];
       const assistant = dataStore.assistants.find(a => a.id === updatedGroup.assistant_id);
       
-      res.json({
+      const result = {
         ...updatedGroup,
         assistant_name: assistant?.name
-      });
+      };
+      
+      console.log('✅ Group updated successfully in memory:', result);
+      res.json(result);
     }
   } catch (error) {
-    console.error('Ошибка обновления группы:', error);
+    console.error('❌ Ошибка обновления группы:', error);
     res.status(500).json({ error: error.message });
   }
 });

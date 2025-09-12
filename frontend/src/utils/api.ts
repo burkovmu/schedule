@@ -476,6 +476,8 @@ export const deleteAssistant = async (id: string): Promise<void> => {
 // Обновление группы
 export const updateGroup = async (id: string, groupData: Partial<Group>): Promise<Group> => {
   try {
+    console.log('🔧 Updating group:', id, 'with data:', groupData);
+    
     const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
       method: 'PUT',
       headers: {
@@ -485,12 +487,16 @@ export const updateGroup = async (id: string, groupData: Partial<Group>): Promis
     });
 
     if (!response.ok) {
-      throw new Error('Ошибка обновления группы');
+      const errorText = await response.text();
+      console.error('❌ Server response error:', response.status, errorText);
+      throw new Error(`Ошибка обновления группы: ${response.status} ${errorText}`);
     }
 
-    return await response.json();
+    const result = await response.json();
+    console.log('✅ Group updated successfully:', result);
+    return result;
   } catch (error) {
-    console.error('Ошибка обновления группы:', error);
+    console.error('❌ Ошибка обновления группы:', error);
     throw error;
   }
 };
