@@ -101,15 +101,31 @@ app.get('/api/lessons/time-slots/all', (req, res) => {
 
 // Группы
 app.get('/api/groups', (req, res) => {
-  res.json(dataStore.groups.sort((a, b) => a.display_order - b.display_order));
+  const groupsWithAssistants = dataStore.groups.map(group => {
+    const assistant = dataStore.assistants.find(a => a.id === group.assistant_id);
+    return {
+      ...group,
+      assistant_name: assistant?.name
+    };
+  });
+  
+  res.json(groupsWithAssistants.sort((a, b) => a.display_order - b.display_order));
 });
 
 app.post('/api/groups', (req, res) => {
-  const { name, display_order } = req.body;
+  const { name, display_order, assistant_id } = req.body;
   const id = uuidv4();
-  const newGroup = { id, name, display_order: display_order || 0 };
+  const newGroup = { id, name, display_order: display_order || 0, assistant_id: assistant_id || null };
   dataStore.groups.push(newGroup);
-  res.json(newGroup);
+  
+  // Находим ассистента для новой группы
+  const assistant = dataStore.assistants.find(a => a.id === newGroup.assistant_id);
+  
+  // Возвращаем группу с именем ассистента
+  res.json({
+    ...newGroup,
+    assistant_name: assistant?.name
+  });
 });
 
 app.put('/api/groups/:id', (req, res) => {
@@ -127,7 +143,15 @@ app.put('/api/groups/:id', (req, res) => {
     ...updates
   };
   
-  res.json(dataStore.groups[groupIndex]);
+  // Находим ассистента для обновленной группы
+  const updatedGroup = dataStore.groups[groupIndex];
+  const assistant = dataStore.assistants.find(a => a.id === updatedGroup.assistant_id);
+  
+  // Возвращаем группу с именем ассистента
+  res.json({
+    ...updatedGroup,
+    assistant_name: assistant?.name
+  });
 });
 
 app.delete('/api/groups/:id', (req, res) => {
