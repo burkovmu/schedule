@@ -67,11 +67,35 @@ CREATE TABLE IF NOT EXISTS lessons (
     FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
 );
 
+-- Таблица дополнительных преподавателей для уроков
+CREATE TABLE IF NOT EXISTS lesson_additional_teachers (
+    id TEXT PRIMARY KEY,
+    lesson_id TEXT NOT NULL,
+    teacher_id TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    FOREIGN KEY (lesson_id) REFERENCES lessons (id) ON DELETE CASCADE,
+    FOREIGN KEY (teacher_id) REFERENCES teachers (id) ON DELETE CASCADE
+);
+
+-- Таблица дополнительных ассистентов для уроков
+CREATE TABLE IF NOT EXISTS lesson_additional_assistants (
+    id TEXT PRIMARY KEY,
+    lesson_id TEXT NOT NULL,
+    assistant_id TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    FOREIGN KEY (lesson_id) REFERENCES lessons (id) ON DELETE CASCADE,
+    FOREIGN KEY (assistant_id) REFERENCES assistants (id) ON DELETE CASCADE
+);
+
 -- Создание индексов для оптимизации
 CREATE INDEX IF NOT EXISTS idx_lessons_group_id ON lessons(group_id);
 CREATE INDEX IF NOT EXISTS idx_lessons_time_slot ON lessons(time_slot);
 CREATE INDEX IF NOT EXISTS idx_lessons_teacher_id ON lessons(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_lessons_room_id ON lessons(room_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_additional_teachers_lesson_id ON lesson_additional_teachers(lesson_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_additional_teachers_teacher_id ON lesson_additional_teachers(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_additional_assistants_lesson_id ON lesson_additional_assistants(lesson_id);
+CREATE INDEX IF NOT EXISTS idx_lesson_additional_assistants_assistant_id ON lesson_additional_assistants(assistant_id);
 
 -- Включение Row Level Security (RLS)
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
@@ -80,6 +104,8 @@ ALTER TABLE teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assistants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_additional_teachers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_additional_assistants ENABLE ROW LEVEL SECURITY;
 
 -- Политики безопасности (разрешаем все операции для аутентифицированных пользователей)
 -- В продакшене вы можете настроить более строгие политики
@@ -106,6 +132,14 @@ CREATE POLICY "Allow all operations on rooms" ON rooms
 
 -- Уроки
 CREATE POLICY "Allow all operations on lessons" ON lessons
+    FOR ALL USING (true);
+
+-- Дополнительные преподаватели
+CREATE POLICY "Allow all operations on lesson_additional_teachers" ON lesson_additional_teachers
+    FOR ALL USING (true);
+
+-- Дополнительные ассистенты
+CREATE POLICY "Allow all operations on lesson_additional_assistants" ON lesson_additional_assistants
     FOR ALL USING (true);
 
 -- Функции для автоматического обновления updated_at

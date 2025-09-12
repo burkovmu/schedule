@@ -708,23 +708,47 @@ app.get('/api/lessons', async (req, res) => {
           *,
           groups!inner(name),
           subjects!inner(name, color),
-          teachers!inner(name),
+          teachers!inner(name, color),
           assistants(name),
-          rooms!inner(name)
+          rooms!inner(name),
+          lesson_additional_teachers(
+            teachers(id, name, color)
+          ),
+          lesson_additional_assistants(
+            assistants(id, name)
+          )
         `)
         .order('time_slot');
       
       if (error) throw error;
       
-      const formattedData = data.map(lesson => ({
-        ...lesson,
-        group_name: lesson.groups.name,
-        subject_name: lesson.subjects.name,
-        subject_color: lesson.subjects.color,
-        teacher_name: lesson.teachers.name,
-        assistant_name: lesson.assistants?.name,
-        room_name: lesson.rooms.name
-      }));
+      const formattedData = data.map(lesson => {
+        // Обрабатываем дополнительные преподаватели
+        const additionalTeachers = lesson.lesson_additional_teachers?.map(lat => ({
+          id: lat.teachers.id,
+          name: lat.teachers.name,
+          color: lat.teachers.color
+        })) || [];
+        
+        // Обрабатываем дополнительные ассистенты
+        const additionalAssistants = lesson.lesson_additional_assistants?.map(laa => ({
+          id: laa.assistants.id,
+          name: laa.assistants.name
+        })) || [];
+        
+        return {
+          ...lesson,
+          group_name: lesson.groups.name,
+          subject_name: lesson.subjects.name,
+          subject_color: lesson.subjects.color,
+          teacher_name: lesson.teachers.name,
+          teacher_color: lesson.teachers.color,
+          assistant_name: lesson.assistants?.name,
+          room_name: lesson.rooms.name,
+          additional_teachers: additionalTeachers,
+          additional_assistants: additionalAssistants
+        };
+      });
       
       res.json(formattedData);
     } else {
@@ -756,7 +780,7 @@ app.get('/api/lessons', async (req, res) => {
 
 app.post('/api/lessons', async (req, res) => {
   try {
-    const { group_id, time_slot, subject_id, teacher_id, assistant_id, room_id, duration, color, comment } = req.body;
+    const { group_id, time_slot, subject_id, teacher_id, assistant_id, room_id, duration, color, comment, additional_teachers, additional_assistants } = req.body;
     const id = uuidv4();
     
     if (useSupabase) {
@@ -778,6 +802,41 @@ app.post('/api/lessons', async (req, res) => {
         .single();
       
       if (error) throw error;
+      
+      // Добавляем дополнительных преподавателей
+      if (additional_teachers && additional_teachers.length > 0) {
+        const teacherInserts = additional_teachers.map(teacherId => ({
+          id: uuidv4(),
+          lesson_id: id,
+          teacher_id: teacherId
+        }));
+        
+        const { error: teachersError } = await supabase
+          .from('lesson_additional_teachers')
+          .insert(teacherInserts);
+        
+        if (teachersError) {
+          console.error('Ошибка добавления дополнительных преподавателей:', teachersError);
+        }
+      }
+      
+      // Добавляем дополнительных ассистентов
+      if (additional_assistants && additional_assistants.length > 0) {
+        const assistantInserts = additional_assistants.map(assistantId => ({
+          id: uuidv4(),
+          lesson_id: id,
+          assistant_id: assistantId
+        }));
+        
+        const { error: assistantsError } = await supabase
+          .from('lesson_additional_assistants')
+          .insert(assistantInserts);
+        
+        if (assistantsError) {
+          console.error('Ошибка добавления дополнительных ассистентов:', assistantsError);
+        }
+      }
+      
       res.json(data);
     } else {
       const newLesson = {
@@ -790,7 +849,9 @@ app.post('/api/lessons', async (req, res) => {
         room_id,
         duration: duration || 45,
         color,
-        comment
+        comment,
+        additional_teachers: additional_teachers || [],
+        additional_assistants: additional_assistants || []
       };
       dataStore.lessons.push(newLesson);
       res.json(newLesson);
@@ -804,9 +865,10 @@ app.post('/api/lessons', async (req, res) => {
 app.put('/api/lessons/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
+    const { additional_teachers, additional_assistants, ...updates } = req.body;
     
     if (useSupabase) {
+      // Обновляем основные поля урока
       const { data, error } = await supabase
         .from('lessons')
         .update(updates)
@@ -815,6 +877,67 @@ app.put('/api/lessons/:id', async (req, res) => {
         .single();
       
       if (error) throw error;
+      
+      // Обновляем дополнительных преподавателей
+      if (additional_teachers !== undefined) {
+        // Удаляем существующих дополнительных преподавателей
+        const { error: deleteTeachersError } = await supabase
+          .from('lesson_additional_teachers')
+          .delete()
+          .eq('lesson_id', id);
+        
+        if (deleteTeachersError) {
+          console.error('Ошибка удаления дополнительных преподавателей:', deleteTeachersError);
+        }
+        
+        // Добавляем новых дополнительных преподавателей
+        if (additional_teachers && additional_teachers.length > 0) {
+          const teacherInserts = additional_teachers.map(teacherId => ({
+            id: uuidv4(),
+            lesson_id: id,
+            teacher_id: teacherId
+          }));
+          
+          const { error: teachersError } = await supabase
+            .from('lesson_additional_teachers')
+            .insert(teacherInserts);
+          
+          if (teachersError) {
+            console.error('Ошибка добавления дополнительных преподавателей:', teachersError);
+          }
+        }
+      }
+      
+      // Обновляем дополнительных ассистентов
+      if (additional_assistants !== undefined) {
+        // Удаляем существующих дополнительных ассистентов
+        const { error: deleteAssistantsError } = await supabase
+          .from('lesson_additional_assistants')
+          .delete()
+          .eq('lesson_id', id);
+        
+        if (deleteAssistantsError) {
+          console.error('Ошибка удаления дополнительных ассистентов:', deleteAssistantsError);
+        }
+        
+        // Добавляем новых дополнительных ассистентов
+        if (additional_assistants && additional_assistants.length > 0) {
+          const assistantInserts = additional_assistants.map(assistantId => ({
+            id: uuidv4(),
+            lesson_id: id,
+            assistant_id: assistantId
+          }));
+          
+          const { error: assistantsError } = await supabase
+            .from('lesson_additional_assistants')
+            .insert(assistantInserts);
+          
+          if (assistantsError) {
+            console.error('Ошибка добавления дополнительных ассистентов:', assistantsError);
+          }
+        }
+      }
+      
       res.json({ message: 'Урок обновлен', data });
     } else {
       const lessonIndex = dataStore.lessons.findIndex(l => l.id === id);
@@ -822,7 +945,12 @@ app.put('/api/lessons/:id', async (req, res) => {
         return res.status(404).json({ error: 'Урок не найден' });
       }
       
-      dataStore.lessons[lessonIndex] = { ...dataStore.lessons[lessonIndex], ...updates };
+      dataStore.lessons[lessonIndex] = { 
+        ...dataStore.lessons[lessonIndex], 
+        ...updates,
+        additional_teachers: additional_teachers !== undefined ? additional_teachers : dataStore.lessons[lessonIndex].additional_teachers,
+        additional_assistants: additional_assistants !== undefined ? additional_assistants : dataStore.lessons[lessonIndex].additional_assistants
+      };
       res.json({ message: 'Урок обновлен' });
     }
   } catch (error) {
