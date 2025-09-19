@@ -10,8 +10,10 @@ interface ViewOnlyLessonProps {
 
 // Функция для вычисления времени урока
 const getLessonTime = (startSlotIndex: number, duration: number): string => {
-  const startHour = 9 + Math.floor(startSlotIndex / 12);
-  const startMinute = (startSlotIndex % 12) * 5;
+  // Используем временные слоты из контекста для точного вычисления времени
+  // startSlotIndex соответствует индексу в массиве timeSlots
+  const startHour = startSlotIndex < 6 ? 8 : 8 + Math.floor((startSlotIndex - 6) / 12) + 1;
+  const startMinute = startSlotIndex < 6 ? 30 + (startSlotIndex * 5) : ((startSlotIndex - 6) % 12) * 5;
   
   const endMinute = startMinute + duration;
   const endHour = startHour + Math.floor(endMinute / 60);
