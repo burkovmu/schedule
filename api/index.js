@@ -827,10 +827,28 @@ app.get('/api/lessons', async (req, res) => {
 
 app.post('/api/lessons', async (req, res) => {
   try {
+    console.log('🚀 POST /api/lessons - получен запрос');
+    console.log('📋 Request body:', JSON.stringify(req.body, null, 2));
+    
     const { group_id, time_slot, subject_id, teacher_id, assistant_id, room_id, duration, color, comment, additional_teachers, additional_assistants } = req.body;
     const id = uuidv4();
     
+    console.log('🔍 Извлеченные данные:', {
+      group_id,
+      time_slot,
+      subject_id,
+      teacher_id,
+      assistant_id,
+      room_id,
+      duration,
+      color,
+      comment,
+      additional_teachers,
+      additional_assistants
+    });
+    
     if (useSupabase) {
+      console.log('🗄️ Используем Supabase для создания урока');
       const { data, error } = await supabase
         .from('lessons')
         .insert([{
@@ -848,10 +866,17 @@ app.post('/api/lessons', async (req, res) => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Ошибка создания урока в Supabase:', error);
+        throw error;
+      }
+      
+      console.log('✅ Урок создан в Supabase:', data);
       
       // Добавляем дополнительных преподавателей
       if (additional_teachers && additional_teachers.length > 0) {
+        console.log('👥 Добавляем дополнительных преподавателей:', additional_teachers);
+        
         const teacherInserts = additional_teachers.map(teacherId => ({
           id: uuidv4(),
           lesson_id: id,
@@ -863,12 +888,16 @@ app.post('/api/lessons', async (req, res) => {
           .insert(teacherInserts);
         
         if (teachersError) {
-          console.error('Ошибка добавления дополнительных преподавателей:', teachersError);
+          console.error('❌ Ошибка добавления дополнительных преподавателей:', teachersError);
+        } else {
+          console.log('✅ Дополнительные преподаватели добавлены');
         }
       }
       
       // Добавляем дополнительных ассистентов
       if (additional_assistants && additional_assistants.length > 0) {
+        console.log('👥 Добавляем дополнительных ассистентов:', additional_assistants);
+        
         const assistantInserts = additional_assistants.map(assistantId => ({
           id: uuidv4(),
           lesson_id: id,
@@ -880,12 +909,16 @@ app.post('/api/lessons', async (req, res) => {
           .insert(assistantInserts);
         
         if (assistantsError) {
-          console.error('Ошибка добавления дополнительных ассистентов:', assistantsError);
+          console.error('❌ Ошибка добавления дополнительных ассистентов:', assistantsError);
+        } else {
+          console.log('✅ Дополнительные ассистенты добавлены');
         }
       }
       
       res.json(data);
     } else {
+      console.log('💾 Используем in-memory хранилище для создания урока');
+      
       const newLesson = {
         id,
         group_id,
@@ -900,11 +933,16 @@ app.post('/api/lessons', async (req, res) => {
         additional_teachers: additional_teachers || [],
         additional_assistants: additional_assistants || []
       };
+      
+      console.log('📝 Создаем урок в памяти:', newLesson);
       dataStore.lessons.push(newLesson);
+      console.log('✅ Урок добавлен в dataStore. Всего уроков:', dataStore.lessons.length);
+      
       res.json(newLesson);
     }
   } catch (error) {
-    console.error('Ошибка создания урока:', error);
+    console.error('❌ Ошибка создания урока:', error);
+    console.error('❌ Stack trace:', error.stack);
     res.status(500).json({ error: error.message });
   }
 });
