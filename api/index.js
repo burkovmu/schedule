@@ -849,6 +849,11 @@ app.post('/api/lessons', async (req, res) => {
     
     if (useSupabase) {
       console.log('🗄️ Используем Supabase для создания урока');
+      
+      // Исправляем assistant_id: если пустой, то null
+      const processedAssistantId = assistant_id && assistant_id.trim() !== '' ? assistant_id : null;
+      console.log('🔧 Обработанный assistant_id:', processedAssistantId);
+      
       const { data, error } = await supabase
         .from('lessons')
         .insert([{
@@ -857,7 +862,7 @@ app.post('/api/lessons', async (req, res) => {
           time_slot,
           subject_id,
           teacher_id,
-          assistant_id,
+          assistant_id: processedAssistantId,
           room_id,
           duration: duration || 45,
           color,
@@ -951,6 +956,11 @@ app.put('/api/lessons/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { additional_teachers, additional_assistants, ...updates } = req.body;
+    
+    // Исправляем assistant_id: если пустой, то null
+    if (updates.assistant_id !== undefined) {
+      updates.assistant_id = updates.assistant_id && updates.assistant_id.trim() !== '' ? updates.assistant_id : null;
+    }
     
     if (useSupabase) {
       // Обновляем основные поля урока
