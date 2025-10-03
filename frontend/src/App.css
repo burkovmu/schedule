@@ -737,8 +737,8 @@ body {
   border-radius: 2px;
   padding: 0;
   color: white;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   cursor: move;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.2s ease, transform 0.1s ease;
@@ -784,8 +784,8 @@ body {
 }
 
 .lesson-time {
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   line-height: 1.2;
   padding: 2px 0;
   min-height: 18px;
@@ -799,8 +799,8 @@ body {
 }
 
 .lesson-data-row {
-  font-weight: 500;
-  font-size: 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   line-height: 1.2;
   padding: 2px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
