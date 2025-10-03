@@ -737,7 +737,7 @@ body {
   border-radius: 2px;
   padding: 0;
   color: white;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: move;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -799,8 +799,8 @@ body {
 }
 
 .lesson-data-row {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 1rem;
   line-height: 1.2;
   padding: 2px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2921,15 +2921,15 @@ body {
 }
 
 .main-staff {
-  font-weight: 500;
+  font-weight: 600;
   color: white;
-  font-size: 0.8rem !important; /* Принудительно устанавливаем тот же размер */
+  font-size: 0.9rem !important; /* Принудительно устанавливаем тот же размер */
 }
 
 .additional-staff {
-  font-weight: 500;
+  font-weight: 600;
   opacity: 1;
-  font-size: 0.8rem !important; /* Принудительно устанавливаем тот же размер */
+  font-size: 0.9rem !important; /* Принудительно устанавливаем тот же размер */
   color: white !important;
   background: none !important;
   border: none !important;
@@ -2953,7 +2953,7 @@ body {
 .additional-staff {
   background-color: rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 600;
   padding: 2px 6px;
   border-radius: 10px;
